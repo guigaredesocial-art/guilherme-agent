@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id          String            @id @default(cuid())
+  displayName String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  identities  ContactIdentity[]
+  conversations Conversation[]
+  leads       Lead[]
+}
+
+model ContactIdentity {
+  id         String   @id @default(cuid())
+  channel    String
+  externalId String
+  contact    Contact  @relation(fields: [contactId], references: [id])
+  contactId  String
+  createdAt  DateTime @default(now())
+
+  @@unique([channel, externalId])
+  @@index([contactId])
+}
+
+model AgentSession {
+  id           String         @id @default(cuid())
+  name         String
+  systemPrompt String
+  model        String         @default("claude-sonnet-4-6")
+  provider     String         @default("anthropic")
+  temperature  Float          @default(0.7)
+  memoryMode   String         @default("window_20")
+  isDefault    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  conversations Conversation[]
+  rules        AIRule[]
+  ragDocs      RagDoc[]
+}
+
+model AIRule {
+  id             String       @id @default(cuid())
+  agentSession   AgentSession @relation(fields: [agentSessionId], references: [id])
+  agentSessionId String
+  priority       Int          @default(0)
+  enabled        Boolean      @default(true)
+  mode           String
+  params         Json         @default("{}")
+  action         String
+  staticReply    String?
+  createdAt      DateTime     @default(now())
+
+  @@index([agentSessionId, priority])
+}
+
+model Conversation {
+  id               String        @id @default(cuid())
+  channel          String
+  contact          Contact       @relation(fields: [contactId], references: [id])
+  contactId        String
+  agentSession     AgentSession? @relation(fields: [agentSessionId], references: [id])
+  agentSessionId   String?
+  aiEnabled        Boolean       @default(true)
+  handoffRequested Boolean       @default(false)
+  status           String        @default("em_atendimento")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  messages         Message[]
+  lead             Lead?
+
+  @@unique([channel, contactId])
+  @@index([contactId])
+}
+
+model Message {
+  id             String           @id @default(cuid())
+  conversation   Conversation     @relation(fields: [conversationId], references: [id])
+  conversationId String
+  role           String
+  content        String
+  providerMsgId  String?          @unique
+  createdAt      DateTime         @default(now())
+  feedback       MessageFeedback?
+
+  @@index([conversationId, createdAt])
+}
+
+model MessageFeedback {
+  id         String   @id @default(cuid())
+  message    Message  @relation(fields: [messageId], references: [id])
+  messageId  String   @unique
+  rating     String
+  correction String?
+  createdAt  DateTime @default(now())
+}
+
+model Lead {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String       @unique
+  contact        Contact      @relation(fields: [contactId], references: [id])
+  contactId      String
+  name           String
+  whatsapp       String       @default("")
+  businessType   String?
+  painPoint      String?
+  monthlyVolume  String?
+  currentTool    String?
+  meetingDate    DateTime?
+  notes          String?
+  status         String       @default("novo")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([contactId])
+  @@index([status])
+}
+
+model RagDoc {
+  id             String       @id @default(cuid())
+  agentSession   AgentSession @relation(fields: [agentSessionId], references: [id])
+  agentSessionId String
+  fileName       String
+  mimeType       String       @default("text/plain")
+  createdAt      DateTime     @default(now())
+  chunks         RagChunk[]
+}
+
+model RagChunk {
+  id             String   @id @default(cuid())
+  doc            RagDoc   @relation(fields: [docId], references: [id], onDelete: Cascade)
+  docId          String
+  ord            Int
+  text           String
+  embeddingModel String   @default("claude-embed")
+  createdAt      DateTime @default(now())
+
+  @@index([docId, ord])
+}
+
+model Operator {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+}

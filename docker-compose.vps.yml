@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: guilherme_agent
+      POSTGRES_USER: guilherme
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - agent-net
+
+  app:
+    image: guilherme-agent:latest
+    restart: always
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3100:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      EVOLUTION_BASE_URL: ${EVOLUTION_BASE_URL}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      NODE_ENV: production
+    depends_on:
+      - postgres
+    networks:
+      - agent-net
+
+networks:
+  agent-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

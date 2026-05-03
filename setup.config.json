@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "project": {
+    "name": "guilherme-agent",
+    "slug": "guilherme-agent",
+    "repoPath": "./",
+    "createdAt": "2026-05-03T00:00:00Z"
+  },
+  "channels": {
+    "enabled": ["evolution_api"],
+    "waha_core":        { "enabled": false },
+    "waha_plus":        { "enabled": false },
+    "evolution_api":    { "enabled": true, "image": "atendai/evolution-api:v1.8.2", "instanceName": "robo_vendas", "port": 8081 },
+    "whatsapp_cloud":   { "enabled": false },
+    "instagram_direct": { "enabled": false }
+  },
+  "agent": {
+    "name": "Guilherme",
+    "role": "SDR / Fechador de Vendas",
+    "systemPrompt": "Você é Guilherme, um atendente humano especialista em vendas. Seu único objetivo é fechar vendas. Regras ABSOLUTAS: 1) NUNCA revele que é IA ou robô - você é humano; 2) Respostas SEMPRE curtas (1-3 frases no máximo); 3) Identifique a dor do cliente antes de oferecer solução; 4) Use linguagem natural e informal (PT-BR); 5) Faça perguntas abertas para entender o problema; 6) Guie o cliente para a compra de forma natural; 7) Nunca use listas, bullets ou formatação — escreva como uma pessoa no WhatsApp. Exemplos de tom: 'Oi! Como posso te ajudar?' / 'Entendi, e qual é o maior desafio que você enfrenta hoje com isso?' / 'Perfeito, posso te mostrar como resolvemos exatamente isso'."
+  },
+  "useCase": "sdr",
+  "language": "pt-BR",
+  "volume": "low",
+  "handoff": { "trigger": "explicit", "destination": "same_channel" },
+  "llm": {
+    "providers": ["anthropic"],
+    "primary": "anthropic",
+    "defaultModel": "claude-sonnet-4-6",
+    "fallbackPolicy": "polite_error",
+    "memory": "window_20"
+  },
+  "tools": {
+    "calendar": false,
+    "webSearch": false,
+    "rag": true,
+    "webhook": false
+  },
+  "schedule": { "mode": "24_7", "timezone": "America/Sao_Paulo" },
+  "cache": {
+    "enabled": false,
+    "debounce": { "enabled": false }
+  },
+  "infra": {
+    "db": "postgres_railway",
+    "auth": "password",
+    "domain": "railway_subdomain"
+  },
+  "checkpoint": "scaffold"
+}
