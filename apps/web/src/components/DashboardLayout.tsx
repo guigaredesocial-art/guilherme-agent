@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const NAV = [
   { href: "/dashboard",     icon: "◈",  label: "Dashboard" },
@@ -19,6 +19,12 @@ interface Props {
 
 export default function DashboardLayout({ children, whatsappStatus }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  function logout() {
+    document.cookie = "token=; path=/; max-age=0";
+    router.push("/");
+  }
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -163,6 +169,34 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
                 : "..."}
             </span>
           </div>
+          <button
+            onClick={logout}
+            style={{
+              width: "100%",
+              padding: "0.45rem 0.75rem",
+              borderRadius: "0.375rem",
+              background: "transparent",
+              border: "1px solid #2a2a2a",
+              color: "#555",
+              fontSize: "0.72rem",
+              cursor: "pointer",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginBottom: "0.5rem",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#ef444440";
+              (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a2a";
+              (e.currentTarget as HTMLButtonElement).style.color = "#555";
+            }}
+          >
+            <span>⎋</span> Sair
+          </button>
           <div style={{ fontSize: "0.68rem", color: "#3a3a3a" }}>
             Deefasabit IA · v2.0
           </div>
