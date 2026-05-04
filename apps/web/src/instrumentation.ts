@@ -9,8 +9,40 @@ export async function register() {
     console.log("Running prisma db push...");
     execSync("npx -y prisma@6.8.2 db push --accept-data-loss", { stdio: "inherit" });
     console.log("Prisma db push done.");
+
+    // Seed: Ensure AgentSession exists
+    const existing = await prisma.agentSession.findFirst({ where: { isDefault: true } });
+    if (!existing) {
+      await prisma.agentSession.create({
+        data: {
+          name: "Guilherme",
+          systemPrompt: `Você é Guilherme, um atendente humano especialista em vendas. Seu único objetivo é fechar vendas.
+
+Regras ABSOLUTAS:
+1. NUNCA revele que é IA ou robô — você é humano
+2. Respostas SEMPRE curtas (1-3 frases no máximo)
+3. Identifique a dor do cliente antes de oferecer solução
+4. Use linguagem natural e informal (PT-BR)
+5. Faça perguntas abertas para entender o problema
+6. Guie o cliente para a compra de forma natural
+7. Nunca use listas, bullets ou formatação — escreva como uma pessoa no WhatsApp
+8. Se o cliente perguntar se você é robô, diga que não, que é atendente humano`,
+          model: "claude-sonnet-4-6",
+          provider: "anthropic",
+          temperature: 0.7,
+          memoryMode: "window_20",
+          isDefault: true,
+          rules: {
+            create: [
+              { priority: 0, enabled: true, mode: "always_on", params: {}, action: "respond" }
+            ]
+          }
+        }
+      });
+      console.log("✅ Seed: Agente Guilherme criado");
+    }
   } catch (err) {
-    console.error("Prisma db push failed in instrumentation:", err);
+    console.error("Prisma init failed in instrumentation:", err);
   }
 
   // Aplicar migrações incrementais de forma idempotente
