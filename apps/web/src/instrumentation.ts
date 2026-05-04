@@ -132,6 +132,23 @@ Regras ABSOLUTAS:
       `ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "reminderSentAt" TIMESTAMP(3)`
     );
 
+    // Fase 3-A: Horário de funcionamento
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "AgentSession" ADD COLUMN IF NOT EXISTS "businessHoursEnabled" BOOLEAN NOT NULL DEFAULT false`
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "AgentSession" ADD COLUMN IF NOT EXISTS "businessHoursStart" INTEGER NOT NULL DEFAULT 9`
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "AgentSession" ADD COLUMN IF NOT EXISTS "businessHoursEnd" INTEGER NOT NULL DEFAULT 18`
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "AgentSession" ADD COLUMN IF NOT EXISTS "businessDays" TEXT NOT NULL DEFAULT '1,2,3,4,5'`
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "AgentSession" ADD COLUMN IF NOT EXISTS "businessHoursMsg" TEXT NOT NULL DEFAULT 'Olá! Nosso atendimento funciona de segunda a sexta, das 9h às 18h. Em breve retornamos! 😊'`
+    );
+
     // Fase 2: notas internas e tabela de lembretes
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "internalNotes" TEXT NOT NULL DEFAULT ''`

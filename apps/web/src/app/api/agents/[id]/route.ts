@@ -21,13 +21,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json();
   const agent = await prisma.agentSession.update({
     where: { id },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: {
       ...(body.name && { name: body.name }),
       ...(body.systemPrompt && { systemPrompt: body.systemPrompt }),
       ...(body.model && { model: body.model }),
       ...(typeof body.temperature === "number" && { temperature: body.temperature }),
       ...(typeof body.isDefault === "boolean" && { isDefault: body.isDefault }),
-    },
+      ...(typeof body.businessHoursEnabled === "boolean" && { businessHoursEnabled: body.businessHoursEnabled }),
+      ...(typeof body.businessHoursStart === "number" && { businessHoursStart: body.businessHoursStart }),
+      ...(typeof body.businessHoursEnd === "number" && { businessHoursEnd: body.businessHoursEnd }),
+      ...(typeof body.businessDays === "string" && { businessDays: body.businessDays }),
+      ...(typeof body.businessHoursMsg === "string" && body.businessHoursMsg && { businessHoursMsg: body.businessHoursMsg }),
+    } as any,
   });
   return Response.json(agent);
 }

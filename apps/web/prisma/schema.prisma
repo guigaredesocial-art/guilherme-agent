@@ -37,7 +37,12 @@ model AgentSession {
   provider     String         @default("anthropic")
   temperature  Float          @default(0.7)
   memoryMode   String         @default("window_20")
-  isDefault    Boolean        @default(false)
+  isDefault            Boolean        @default(false)
+  businessHoursEnabled Boolean        @default(false)
+  businessHoursStart   Int            @default(9)
+  businessHoursEnd     Int            @default(18)
+  businessDays         String         @default("1,2,3,4,5")
+  businessHoursMsg     String         @default("Olá! Nosso atendimento funciona de segunda a sexta, das 9h às 18h. Em breve retornamos! 😊")
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   conversations Conversation[]

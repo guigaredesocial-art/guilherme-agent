@@ -102,7 +102,54 @@ export async function flushConversation(
   // action === "respond"
   const { agentSession } = decision;
 
-  // 2. Auto-classificar tags e status com base na mensagem do usuário
+  // 2a. Checar horário de funcionamento
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bh = agentSession as any;
+  if (bh.businessHoursEnabled) {
+    // Converter para horário de Brasília (UTC-3)
+    const now = new Date();
+    const brTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const hour = brTime.getUTCHours();
+    const day = brTime.getUTCDay(); // 0=Dom, 1=Seg ... 6=Sáb
+    const allowedDays: number[] = (bh.businessDays ?? "1,2,3,4,5")
+      .split(",")
+      .map((d: string) => parseInt(d.trim()));
+
+    const isOutside =
+      !allowedDays.includes(day) ||
+      hour < (bh.businessHoursStart ?? 9) ||
+      hour >= (bh.businessHoursEnd ?? 18);
+
+    if (isOutside) {
+      const bhMsg: string =
+        bh.businessHoursMsg ||
+        "Olá! Nosso atendimento funciona de segunda a sexta, das 9h às 18h. Em breve retornamos! 😊";
+
+      // Buscar histórico para evitar repetir a mensagem de fora de horário
+      const lastMsgs = await prisma.message.findMany({
+        where: { conversationId: conv.id },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+      });
+      const alreadySent = lastMsgs.some(
+        (m) => m.role === "assistant" && m.content === bhMsg
+      );
+
+      if (!alreadySent) {
+        const externalId = msgs[0]?.contactId;
+        if (externalId) {
+          await sendTextEvolution(externalId, bhMsg);
+          await prisma.message.create({
+            data: { conversationId: conv.id, role: "assistant", content: bhMsg },
+          });
+          console.log(JSON.stringify({ event: "business_hours.outside", convId: conv.id, hour, day }));
+        }
+      }
+      return;
+    }
+  }
+
+  // 2b. Auto-classificar tags e status com base na mensagem do usuário
   const userText = msgs.map((m) => m.text).join(" ");
   await autoClassify(conv.id, userText, conv.status);
 

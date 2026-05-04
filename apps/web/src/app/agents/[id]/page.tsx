@@ -21,6 +21,11 @@ interface Agent {
   model: string;
   temperature: number;
   isDefault: boolean;
+  businessHoursEnabled: boolean;
+  businessHoursStart: number;
+  businessHoursEnd: number;
+  businessDays: string;
+  businessHoursMsg: string;
   ragDocs: Array<{ id: string; fileName: string; _count?: { chunks: number } }>;
   rules: AIRule[];
 }
@@ -87,6 +92,11 @@ export default function AgentDetailPage() {
         systemPrompt: agent.systemPrompt,
         model: agent.model,
         temperature: agent.temperature,
+        businessHoursEnabled: agent.businessHoursEnabled,
+        businessHoursStart: agent.businessHoursStart,
+        businessHoursEnd: agent.businessHoursEnd,
+        businessDays: agent.businessDays,
+        businessHoursMsg: agent.businessHoursMsg,
       }),
     });
     setSaving(false);
@@ -248,6 +258,116 @@ export default function AgentDetailPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ─── Horário de Funcionamento ─────────────────── */}
+          <div className="card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
+              <div>
+                <div style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                  Horário de Funcionamento
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "2px" }}>
+                  O bot só responde dentro do horário definido
+                </div>
+              </div>
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={agent.businessHoursEnabled}
+                  onChange={(e) => setAgent({ ...agent, businessHoursEnabled: e.target.checked })}
+                />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+
+            {agent.businessHoursEnabled && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+                {/* Horários */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div>
+                    <label style={{ fontSize: "0.8rem", color: "var(--muted)", display: "block", marginBottom: "4px" }}>Abre às (hora)</label>
+                    <input
+                      type="number" min="0" max="23"
+                      className="input"
+                      value={agent.businessHoursStart}
+                      onChange={(e) => setAgent({ ...agent, businessHoursStart: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "0.8rem", color: "var(--muted)", display: "block", marginBottom: "4px" }}>Fecha às (hora)</label>
+                    <input
+                      type="number" min="0" max="23"
+                      className="input"
+                      value={agent.businessHoursEnd}
+                      onChange={(e) => setAgent({ ...agent, businessHoursEnd: parseInt(e.target.value) || 18 })}
+                    />
+                  </div>
+                </div>
+
+                {/* Dias da semana */}
+                <div>
+                  <label style={{ fontSize: "0.8rem", color: "var(--muted)", display: "block", marginBottom: "0.5rem" }}>Dias de atendimento</label>
+                  <div style={{ display: "flex", gap: "0.375rem", flexWrap: "wrap" }}>
+                    {[
+                      { label: "Dom", val: 0 },
+                      { label: "Seg", val: 1 },
+                      { label: "Ter", val: 2 },
+                      { label: "Qua", val: 3 },
+                      { label: "Qui", val: 4 },
+                      { label: "Sex", val: 5 },
+                      { label: "Sáb", val: 6 },
+                    ].map(({ label, val }) => {
+                      const activeDays = agent.businessDays.split(",").map(Number);
+                      const active = activeDays.includes(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => {
+                            const days = agent.businessDays.split(",").map(Number).filter(Boolean);
+                            const next = active ? days.filter((d) => d !== val) : [...days, val].sort();
+                            setAgent({ ...agent, businessDays: next.join(",") });
+                          }}
+                          style={{
+                            padding: "0.3rem 0.625rem",
+                            borderRadius: "0.375rem",
+                            fontSize: "0.78rem",
+                            fontWeight: active ? 700 : 400,
+                            border: "1px solid",
+                            borderColor: active ? "var(--accent)" : "var(--card-border)",
+                            background: active ? "var(--accent-dim)" : "transparent",
+                            color: active ? "var(--accent)" : "var(--muted)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Mensagem fora do horário */}
+                <div>
+                  <label style={{ fontSize: "0.8rem", color: "var(--muted)", display: "block", marginBottom: "4px" }}>
+                    Mensagem enviada fora do horário
+                  </label>
+                  <textarea
+                    className="input"
+                    rows={3}
+                    value={agent.businessHoursMsg}
+                    onChange={(e) => setAgent({ ...agent, businessHoursMsg: e.target.value })}
+                  />
+                </div>
+
+                {/* Preview */}
+                <div style={{ padding: "0.625rem 0.875rem", background: "#141414", borderRadius: "0.5rem", border: "1px solid var(--card-border)", fontSize: "0.78rem", color: "var(--muted)" }}>
+                  ⏰ Bot ativo: {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"]
+                    .filter((_, i) => agent.businessDays.split(",").map(Number).includes(i))
+                    .join(", ")} · {agent.businessHoursStart}h às {agent.businessHoursEnd}h (horário de Brasília)
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ─── Regras de IA ─────────────────────────────── */}
