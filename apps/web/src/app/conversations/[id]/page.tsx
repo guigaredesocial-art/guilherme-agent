@@ -254,6 +254,17 @@ export default function ConversationPage() {
                 🤖 Devolver IA
               </button>
             )}
+
+            <button
+              onClick={() => {
+                const link = `${window.location.origin}/portal/${id}`;
+                navigator.clipboard.writeText(link).then(() => alert("Link copiado! Envie para o cliente pelo WhatsApp.")).catch(() => prompt("Copie o link abaixo:", link));
+              }}
+              style={{ padding: "0.3rem 0.875rem", borderRadius: "0.375rem", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700, background: "#3b82f618", color: "#3b82f6", border: "1px solid #3b82f640", whiteSpace: "nowrap" }}
+              title="Enviar link do portal ao cliente"
+            >
+              🔗 Portal
+            </button>
           </div>
 
           {/* Lead form modal */}
