@@ -22,7 +22,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const body = await req.json();
 
-  const lead = await prisma.lead.update({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lead = await (prisma.lead.update as any)({
     where: { id },
     data: {
       ...(body.name !== undefined && { name: body.name }),
@@ -36,6 +37,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }),
       ...(body.notes !== undefined && { notes: body.notes }),
       ...(body.status !== undefined && { status: body.status }),
+      ...(body.city !== undefined && { city: body.city }),
+      ...(body.leadSource !== undefined && { leadSource: body.leadSource }),
+      ...(body.nextAction !== undefined && { nextAction: body.nextAction }),
+      ...(body.leadScore !== undefined && { leadScore: body.leadScore }),
     },
   });
 

@@ -132,6 +132,33 @@ Regras ABSOLUTAS:
       `ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "reminderSentAt" TIMESTAMP(3)`
     );
 
+    // Origem, cidade, próxima ação, score e drip
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "city" TEXT`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "leadSource" TEXT NOT NULL DEFAULT 'organico'`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "nextAction" TEXT`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "leadScore" INTEGER NOT NULL DEFAULT 0`);
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "DripMessage" (
+        "id" TEXT NOT NULL,
+        "leadId" TEXT NOT NULL,
+        "step" INTEGER NOT NULL,
+        "message" TEXT NOT NULL,
+        "scheduledAt" TIMESTAMP(3) NOT NULL,
+        "sentAt" TIMESTAMP(3),
+        "status" TEXT NOT NULL DEFAULT 'pending',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "DripMessage_pkey" PRIMARY KEY ("id")
+      )
+    `);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "DripMessage_leadId_idx" ON "DripMessage"("leadId")`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "DripMessage_status_scheduledAt_idx" ON "DripMessage"("status", "scheduledAt")`);
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "DripMessage" ADD CONSTRAINT "DripMessage_leadId_fkey"
+          FOREIGN KEY ("leadId") REFERENCES "Lead"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$
+    `);
+
     // Fase 3-D: Multiusuário
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "Operator" ADD COLUMN IF NOT EXISTS "role" TEXT NOT NULL DEFAULT 'operator'`
@@ -280,7 +307,25 @@ Regras ABSOLUTAS:
         } catch { /* ignore */ }
       }
 
-      // 4. Lembrete de reunião (1h antes)
+      // 4. Drip sequence (D+1, D+3, D+7)
+      const dripDevidos = await (prisma as any).dripMessage.findMany({
+        where: { status: "pending", scheduledAt: { lte: now } },
+        include: { lead: { include: { conversation: { include: { contact: { include: { identities: true } } } } } } },
+      });
+      for (const drip of dripDevidos) {
+        const extId = drip.lead.conversation?.contact?.identities?.[0]?.externalId;
+        if (!extId) continue;
+        try {
+          await sendTextEvolution(extId, drip.message);
+          await (prisma as any).dripMessage.update({
+            where: { id: drip.id },
+            data: { status: "sent", sentAt: now },
+          });
+          console.log(JSON.stringify({ event: "drip.sent", dripId: drip.id, step: drip.step }));
+        } catch { /* ignore */ }
+      }
+
+      // 5. Lembrete de reunião (1h antes)
       const leadsReuniao = await prisma.lead.findMany({
         where: {
           meetingDate: { gte: thirtyMinFromNow, lte: oneHourFromNow },

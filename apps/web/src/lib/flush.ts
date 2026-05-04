@@ -63,6 +63,24 @@ async function autoClassify(convId: string, userText: string, currentStatus: str
     if (newTags.length > 0) {
       console.log(JSON.stringify({ event: "auto_tags", convId, newTags }));
     }
+
+    // Atualizar lead score
+    const finalTags = mergedTags;
+    let score = 0;
+    if (finalTags.includes("🔥 quente"))      score = Math.max(score, 80);
+    if (finalTags.includes("📅 agendamento")) score = Math.max(score, 70);
+    if (finalTags.includes("💰 preço"))       score = Math.max(score, 50);
+    if (finalTags.includes("❓ dúvida"))       score = Math.max(score, 30);
+    if (finalTags.includes("❄️ frio"))         score = Math.max(score, 10);
+    const finalStatus = newStatus ?? currentStatus;
+    if (finalStatus === "reuniao_agendada") score = Math.min(100, score + 15);
+    if (finalStatus === "qualificado")      score = Math.min(100, score + 10);
+
+    await prisma.lead.updateMany({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      where: { conversationId: convId } as any,
+      data: { leadScore: score } as any,
+    });
   } catch (e) {
     console.error("autoClassify error:", e);
   }

@@ -12,6 +12,15 @@ const COLUMNS: { key: string; label: string; color: string; emoji: string }[] = 
   { key: "perdido",          label: "Perdido",          color: "#ef4444", emoji: "❌" },
 ];
 
+const SOURCE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
+  facebook_ads: { label: "Facebook Ads",  icon: "📘", color: "#3b82f6" },
+  google_ads:   { label: "Google Ads",    icon: "🔍", color: "#f59e0b" },
+  organico:     { label: "Orgânico",      icon: "🌱", color: "#22c55e" },
+  indicacao:    { label: "Indicação",     icon: "👥", color: "#a855f7" },
+  instagram:    { label: "Instagram",     icon: "📷", color: "#ec4899" },
+  site:         { label: "Site",          icon: "🌐", color: "#6b7280" },
+};
+
 interface Lead {
   id: string;
   name: string;
@@ -23,12 +32,26 @@ interface Lead {
   meetingDate?: string;
   notes?: string;
   status: string;
+  city?: string;
+  leadSource: string;
+  nextAction?: string;
+  leadScore: number;
   createdAt: string;
   conversationId: string;
 }
 
 function getToken() {
   return document.cookie.split(";").find((c) => c.trim().startsWith("token="))?.split("=")[1] ?? "";
+}
+
+function ScoreBadge({ score }: { score: number }) {
+  const color = score >= 70 ? "#ef4444" : score >= 50 ? "#f59e0b" : score >= 30 ? "#3b82f6" : "#6b7280";
+  const label = score >= 70 ? "🔥" : score >= 50 ? "⚡" : score >= 30 ? "💧" : "❄️";
+  return (
+    <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 6px", borderRadius: "9999px", background: color + "20", color, border: `1px solid ${color}40`, flexShrink: 0 }}>
+      {label} {score}
+    </span>
+  );
 }
 
 function LeadCard({
@@ -50,14 +73,16 @@ function LeadCard({
 }) {
   const initials = lead.name.slice(0, 2).toUpperCase();
   const date = new Date(lead.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  const isHot = lead.leadScore >= 70;
+  const src = SOURCE_LABELS[lead.leadSource];
 
   return (
     <div
       onClick={onClick}
       style={{
-        background: isSelected ? "#adff2f06" : "#161616",
-        border: `1px solid ${isSelected ? "var(--accent)" : color + "30"}`,
-        borderLeft: `3px solid ${color}`,
+        background: isSelected ? "#adff2f06" : isHot ? "#ef444406" : "#161616",
+        border: `1px solid ${isSelected ? "var(--accent)" : isHot ? "#ef444440" : color + "30"}`,
+        borderLeft: `3px solid ${isHot ? "#ef4444" : color}`,
         borderRadius: "0.5rem",
         padding: "0.75rem",
         cursor: "pointer",
@@ -65,7 +90,7 @@ function LeadCard({
         marginBottom: "0.5rem",
       }}
     >
-      {/* Avatar + nome */}
+      {/* Avatar + nome + score */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
         <div
           style={{
@@ -90,13 +115,24 @@ function LeadCard({
             {lead.name}
           </div>
         </div>
+        {lead.leadScore > 0 && <ScoreBadge score={lead.leadScore} />}
       </div>
+
+      {/* Origem */}
+      {src && (
+        <div style={{ fontSize: "0.68rem", color: src.color, marginBottom: "0.2rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+          {src.icon} {src.label}
+        </div>
+      )}
 
       {/* Info */}
       {lead.businessType && (
         <div style={{ fontSize: "0.72rem", color: "var(--muted)", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-          🏢 {lead.businessType}
+          🏢 {lead.businessType}{lead.city ? ` · 📍 ${lead.city}` : ""}
         </div>
+      )}
+      {!lead.businessType && lead.city && (
+        <div style={{ fontSize: "0.72rem", color: "var(--muted)", marginBottom: "0.25rem" }}>📍 {lead.city}</div>
       )}
       {lead.whatsapp && (
         <div style={{ fontSize: "0.72rem", color: "var(--muted)", marginBottom: "0.25rem" }}>
@@ -106,6 +142,11 @@ function LeadCard({
       {lead.meetingDate && (
         <div style={{ fontSize: "0.72rem", color: "#a855f7", marginBottom: "0.25rem" }}>
           📅 {new Date(lead.meetingDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+        </div>
+      )}
+      {lead.nextAction && (
+        <div style={{ fontSize: "0.68rem", color: "#f59e0b", marginBottom: "0.25rem" }}>
+          ▶ {lead.nextAction}
         </div>
       )}
 
@@ -145,6 +186,7 @@ export default function CrmPage() {
   const [editing, setEditing] = useState<Partial<Lead>>({});
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
 
   async function loadLeads() {
     const token = getToken();
@@ -195,6 +237,8 @@ export default function CrmPage() {
     }
   }
 
+  const filteredLeads = sourceFilter === "all" ? leads : leads.filter((l) => l.leadSource === sourceFilter);
+  const hotLeads = leads.filter((l) => l.leadScore >= 70);
   const totalPipeline = leads.filter((l) => ["em_negociacao", "reuniao_agendada"].includes(l.status)).length;
 
   function exportCSV() {
@@ -239,6 +283,11 @@ export default function CrmPage() {
             <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>CRM / Leads</h1>
             <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>
               {leads.length} lead{leads.length !== 1 ? "s" : ""} · {totalPipeline} em negociação ativa
+              {hotLeads.length > 0 && (
+                <span style={{ marginLeft: "0.5rem", color: "#ef4444", fontWeight: 700 }}>
+                  · 🔥 {hotLeads.length} quente{hotLeads.length > 1 ? "s" : ""} — responda agora!
+                </span>
+              )}
             </p>
           </div>
           <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -252,6 +301,27 @@ export default function CrmPage() {
             </Link>
           </div>
         </div>
+
+        {/* Filtro por origem */}
+        {leads.length > 0 && (
+          <div style={{ display: "flex", gap: "0.375rem", marginBottom: "0.875rem", flexWrap: "wrap" }}>
+            <button
+              onClick={() => setSourceFilter("all")}
+              style={{ padding: "0.25rem 0.75rem", borderRadius: "9999px", fontSize: "0.72rem", fontWeight: sourceFilter === "all" ? 700 : 400, border: "1px solid", borderColor: sourceFilter === "all" ? "var(--accent)" : "var(--card-border)", background: sourceFilter === "all" ? "var(--accent-dim)" : "transparent", color: sourceFilter === "all" ? "var(--accent)" : "var(--muted)", cursor: "pointer" }}
+            >
+              Todos
+            </button>
+            {Object.entries(SOURCE_LABELS).filter(([k]) => leads.some((l) => l.leadSource === k)).map(([k, v]) => (
+              <button
+                key={k}
+                onClick={() => setSourceFilter(k)}
+                style={{ padding: "0.25rem 0.75rem", borderRadius: "9999px", fontSize: "0.72rem", fontWeight: sourceFilter === k ? 700 : 400, border: "1px solid", borderColor: sourceFilter === k ? v.color : "var(--card-border)", background: sourceFilter === k ? v.color + "22" : "transparent", color: sourceFilter === k ? v.color : "var(--muted)", cursor: "pointer" }}
+              >
+                {v.icon} {v.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Pipeline summary bar */}
         {leads.length > 0 && (
@@ -277,7 +347,7 @@ export default function CrmPage() {
                   <div key={c.key} style={{ flex: "0 0 200px", height: 300, background: "#111", borderRadius: "0.5rem", opacity: 0.4 }} />
                 ))}
               </div>
-            ) : leads.length === 0 ? (
+            ) : filteredLeads.length === 0 ? (
               <div className="card empty-state">
                 <div className="empty-state-icon">🗂️</div>
                 <div className="empty-state-title">Nenhum lead ainda</div>
@@ -288,7 +358,9 @@ export default function CrmPage() {
             ) : (
               <div style={{ display: "flex", gap: "0.75rem", minWidth: `${COLUMNS.length * 210}px` }}>
                 {COLUMNS.map((col, colIndex) => {
-                  const colLeads = leads.filter((l) => l.status === col.key);
+                  const colLeads = filteredLeads
+                    .filter((l) => l.status === col.key)
+                    .sort((a, b) => b.leadScore - a.leadScore); // hot leads no topo
                   return (
                     <div
                       key={col.key}
@@ -387,9 +459,30 @@ export default function CrmPage() {
                   </select>
                 </div>
 
+                {/* Score badge no painel */}
+                {selected.leadScore > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", background: selected.leadScore >= 70 ? "#ef444410" : "#141414", borderRadius: "0.375rem", border: `1px solid ${selected.leadScore >= 70 ? "#ef444430" : "var(--card-border)"}` }}>
+                    <ScoreBadge score={selected.leadScore} />
+                    <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
+                      {selected.leadScore >= 70 ? "Lead quente — responda agora!" : selected.leadScore >= 50 ? "Lead morno" : "Lead frio"}
+                    </span>
+                  </div>
+                )}
+
+                {/* Origem */}
+                <div>
+                  <label style={{ fontSize: "0.68rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "4px", fontWeight: 600 }}>Origem</label>
+                  <select className="input" value={editing.leadSource ?? "organico"} onChange={(e) => setEditing((p) => ({ ...p, leadSource: e.target.value }))} style={{ fontSize: "0.825rem" }}>
+                    {Object.entries(SOURCE_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{v.icon} {v.label}</option>
+                    ))}
+                  </select>
+                </div>
+
                 {[
                   { key: "name",          label: "Nome" },
                   { key: "whatsapp",      label: "WhatsApp" },
+                  { key: "city",          label: "Cidade" },
                   { key: "businessType",  label: "Tipo de negócio" },
                   { key: "painPoint",     label: "Dor principal" },
                   { key: "monthlyVolume", label: "Volume mensal" },
@@ -417,6 +510,19 @@ export default function CrmPage() {
                     className="input"
                     value={editing.meetingDate ? new Date(editing.meetingDate).toISOString().slice(0, 16) : ""}
                     onChange={(e) => setEditing((prev) => ({ ...prev, meetingDate: e.target.value ? new Date(e.target.value).toISOString() : undefined }))}
+                    style={{ fontSize: "0.825rem" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "0.68rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "4px", fontWeight: 600 }}>
+                    Próxima Ação ▶
+                  </label>
+                  <input
+                    className="input"
+                    value={editing.nextAction ?? ""}
+                    onChange={(e) => setEditing((prev) => ({ ...prev, nextAction: e.target.value }))}
+                    placeholder="Ex: Enviar proposta, Ligar amanhã..."
                     style={{ fontSize: "0.825rem" }}
                   />
                 </div>

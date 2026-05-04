@@ -141,11 +141,31 @@ model Lead {
   reminderSentAt   DateTime?
   notes            String?
   status           String       @default("novo")
+  city             String?
+  leadSource       String       @default("organico")
+  nextAction       String?
+  leadScore        Int          @default(0)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+  drip             DripMessage[]
 
   @@index([contactId])
   @@index([status])
+}
+
+model DripMessage {
+  id          String   @id @default(cuid())
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId      String
+  step        Int
+  message     String
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  @@index([leadId])
+  @@index([status, scheduledAt])
 }
 
 model RagDoc {
