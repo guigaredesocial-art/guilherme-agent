@@ -30,15 +30,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const { aiEnabled, handoffRequested, status } = body;
+  const { aiEnabled, handoffRequested, status, internalNotes } = body;
 
   const updated = await prisma.conversation.update({
     where: { id },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: {
       ...(typeof aiEnabled === "boolean" && { aiEnabled }),
       ...(typeof handoffRequested === "boolean" && { handoffRequested }),
       ...(typeof status === "string" && { status }),
-    },
+      ...(typeof internalNotes === "string" && { internalNotes }),
+    } as any,
   });
 
   return Response.json(updated);

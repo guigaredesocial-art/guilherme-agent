@@ -132,6 +132,36 @@ Regras ABSOLUTAS:
       `ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "reminderSentAt" TIMESTAMP(3)`
     );
 
+    // Fase 2: notas internas e tabela de lembretes
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "internalNotes" TEXT NOT NULL DEFAULT ''`
+    );
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Reminder" (
+        "id" TEXT NOT NULL,
+        "conversationId" TEXT NOT NULL,
+        "message" TEXT NOT NULL,
+        "scheduledAt" TIMESTAMP(3) NOT NULL,
+        "sentAt" TIMESTAMP(3),
+        "status" TEXT NOT NULL DEFAULT 'pending',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "Reminder_pkey" PRIMARY KEY ("id")
+      )
+    `);
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "Reminder_conversationId_idx" ON "Reminder"("conversationId")`
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "Reminder_status_scheduledAt_idx" ON "Reminder"("status", "scheduledAt")`
+    );
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "Reminder" ADD CONSTRAINT "Reminder_conversationId_fkey"
+          FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$
+    `);
+
     console.log(JSON.stringify({ event: "migrations.ok" }));
   } catch (err) {
     console.error(JSON.stringify({ event: "migrations.failed", err: String(err) }));
@@ -204,7 +234,25 @@ Regras ABSOLUTAS:
         } catch { /* ignore */ }
       }
 
-      // 3. Lembrete de reunião (1h antes)
+      // 3. Enviar lembretes agendados (Reminder table)
+      const remindersDevidos = await (prisma as any).reminder.findMany({
+        where: { status: "pending", scheduledAt: { lte: now } },
+        include: { conversation: { include: { contact: { include: { identities: true } } } } },
+      });
+      for (const rem of remindersDevidos) {
+        const extId = rem.conversation.contact.identities[0]?.externalId;
+        if (!extId) continue;
+        try {
+          await sendTextEvolution(extId, rem.message);
+          await (prisma as any).reminder.update({
+            where: { id: rem.id },
+            data: { status: "sent", sentAt: now },
+          });
+          console.log(JSON.stringify({ event: "reminder.sent", reminderId: rem.id }));
+        } catch { /* ignore */ }
+      }
+
+      // 4. Lembrete de reunião (1h antes)
       const leadsReuniao = await prisma.lead.findMany({
         where: {
           meetingDate: { gte: thirtyMinFromNow, lte: oneHourFromNow },

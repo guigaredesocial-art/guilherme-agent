@@ -7,6 +7,7 @@ const NAV = [
   { href: "/crm",           icon: "◉",  label: "CRM / Leads" },
   { href: "/insights",      icon: "◎",  label: "Insights" },
   { href: "/chat-interno",  icon: "🧠", label: "Chat Interno" },
+  { href: "/reminders",     icon: "⏰", label: "Lembretes" },
   { href: "/agents",        icon: "◆",  label: "Agente" },
   { href: "/qrcode",        icon: "◻",  label: "QR Code" },
 ];
