@@ -6,7 +6,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PHASE=phase-production-build
 RUN npm ci
 COPY . .
-COPY setup.config.json ./setup.config.json
 RUN npm run build
 
 FROM node:20-alpine AS runner
@@ -22,7 +21,6 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/setup.config.json ./setup.config.json
 
 USER nextjs
 EXPOSE 3000
