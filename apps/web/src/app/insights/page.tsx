@@ -250,7 +250,8 @@ export default function InsightsPage() {
                       </Pie>
                       <Tooltip
                         contentStyle={CUSTOM_TOOLTIP_STYLE}
-                        formatter={(val: number, name: string) => [val, name]}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter={(val: any, name: any) => [val, name]}
                       />
                       <Legend
                         wrapperStyle={{ fontSize: "0.75rem" }}
@@ -288,7 +289,8 @@ export default function InsightsPage() {
                       </Pie>
                       <Tooltip
                         contentStyle={CUSTOM_TOOLTIP_STYLE}
-                        formatter={(val: number, name: string) => [val, name]}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter={(val: any, name: any) => [val, name]}
                       />
                       <Legend
                         wrapperStyle={{ fontSize: "0.75rem" }}
