@@ -16,7 +16,7 @@ interface Message { id: string; role: string; content: string; createdAt: string
 interface Lead { id: string; name: string; status: string }
 interface ConvDetail {
   id: string; aiEnabled: boolean; handoffRequested: boolean; status: string; channel: string;
-  contact: { displayName?: string };
+  contact: { id: string; displayName?: string };
   messages: Message[];
   lead?: Lead | null;
 }
@@ -111,17 +111,21 @@ export default function ConversationPage() {
   }
 
   async function createLead() {
-    if (!leadForm.name.trim()) return;
+    if (!leadForm.name.trim() || !conv) return;
     setSavingLead(true);
     const token = getToken();
-    await fetch("/api/leads", {
+    const res = await fetch("/api/leads", {
       method: "POST",
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ ...leadForm, conversationId: id }),
+      body: JSON.stringify({ ...leadForm, conversationId: id, contactId: conv.contact.id }),
     });
+    setSavingLead(false);
+    if (!res.ok) {
+      alert("Erro ao criar lead. Tente novamente.");
+      return;
+    }
     setShowLeadForm(false);
     await loadConv();
-    setSavingLead(false);
   }
 
   if (!conv) {
