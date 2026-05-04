@@ -7,7 +7,7 @@ export async function register() {
   try {
     const { execSync } = require("child_process");
     console.log("Running prisma db push...");
-    execSync("npx -y prisma db push --accept-data-loss", { stdio: "inherit" });
+    execSync("npx -y prisma@6.8.2 db push --accept-data-loss", { stdio: "inherit" });
     console.log("Prisma db push done.");
   } catch (err) {
     console.error("Prisma db push failed in instrumentation:", err);
