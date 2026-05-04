@@ -257,23 +257,48 @@ export default function ConversationPage() {
             </button>
           )}
 
-          {/* AI toggle */}
-          <button
-            onClick={toggleAI}
-            style={{
-              padding: "0.3rem 0.875rem",
-              borderRadius: "0.375rem",
-              cursor: "pointer",
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              background: conv.aiEnabled ? "#22c55e18" : "#ef444418",
-              color: conv.aiEnabled ? "#22c55e" : "#ef4444",
-              border: `1px solid ${conv.aiEnabled ? "#22c55e40" : "#ef444440"}`,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {conv.handoffRequested ? "✓ Resolver Handoff" : conv.aiEnabled ? "Pausar IA" : "Reativar IA"}
-          </button>
+          {/* AI toggle / Assumir conversa */}
+          {conv.aiEnabled ? (
+            <button
+              onClick={toggleAI}
+              style={{
+                padding: "0.3rem 0.875rem",
+                borderRadius: "0.375rem",
+                cursor: "pointer",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                background: "#ef444418",
+                color: "#ef4444",
+                border: "1px solid #ef444440",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.3rem",
+              }}
+            >
+              👤 Assumir Conversa
+            </button>
+          ) : (
+            <button
+              onClick={toggleAI}
+              style={{
+                padding: "0.3rem 0.875rem",
+                borderRadius: "0.375rem",
+                cursor: "pointer",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                background: "#22c55e18",
+                color: "#22c55e",
+                border: "1px solid #22c55e40",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.3rem",
+              }}
+            >
+              🤖 Devolver para IA
+            </button>
+          )}
         </div>
 
         {/* ─── Lead form modal ───────── */}

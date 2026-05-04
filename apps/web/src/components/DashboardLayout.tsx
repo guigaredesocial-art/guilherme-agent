@@ -3,11 +3,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/dashboard", icon: "◈", label: "Dashboard" },
-  { href: "/crm", icon: "◉", label: "CRM / Leads" },
-  { href: "/insights", icon: "◎", label: "Insights" },
-  { href: "/agents", icon: "◆", label: "Agente" },
-  { href: "/qrcode", icon: "◻", label: "QR Code" },
+  { href: "/dashboard",     icon: "◈",  label: "Dashboard" },
+  { href: "/crm",           icon: "◉",  label: "CRM / Leads" },
+  { href: "/insights",      icon: "◎",  label: "Insights" },
+  { href: "/chat-interno",  icon: "🧠", label: "Chat Interno" },
+  { href: "/agents",        icon: "◆",  label: "Agente" },
+  { href: "/qrcode",        icon: "◻",  label: "QR Code" },
 ];
 
 interface Props {

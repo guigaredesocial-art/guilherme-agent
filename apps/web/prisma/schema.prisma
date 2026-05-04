@@ -70,6 +70,9 @@ model Conversation {
   aiEnabled        Boolean       @default(true)
   handoffRequested Boolean       @default(false)
   status           String        @default("em_atendimento")
+  tags             String        @default("")
+  lastUserMsgAt    DateTime?
+  followupSentAt   DateTime?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   messages         Message[]
@@ -113,11 +116,12 @@ model Lead {
   painPoint      String?
   monthlyVolume  String?
   currentTool    String?
-  meetingDate    DateTime?
-  notes          String?
-  status         String       @default("novo")
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  meetingDate      DateTime?
+  reminderSentAt   DateTime?
+  notes            String?
+  status           String       @default("novo")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@index([contactId])
   @@index([status])

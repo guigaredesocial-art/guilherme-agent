@@ -16,6 +16,7 @@ interface Conversation {
   aiEnabled: boolean;
   handoffRequested: boolean;
   status: string;
+  tags: string;
   updatedAt: string;
   contact: { displayName?: string };
   messages: Array<{ content: string; role: string }>;
@@ -285,6 +286,11 @@ export default function DashboardPage() {
                             ⚠ Handoff
                           </span>
                         )}
+                        {conv.tags && conv.tags.split(",").filter(Boolean).map((tag) => (
+                          <span key={tag} className="chip" style={{ background: "#ffffff08", color: "#9ca3af", border: "1px solid #2a2a2a", fontSize: "0.68rem" }}>
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                       <div
                         style={{
