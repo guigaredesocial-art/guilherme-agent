@@ -18,7 +18,7 @@ interface Conversation {
   status: string;
   tags: string;
   updatedAt: string;
-  contact: { displayName?: string };
+  contact: { displayName?: string; photoUrl?: string };
   messages: Array<{ content: string; role: string }>;
 }
 
@@ -306,9 +306,12 @@ export default function DashboardPage() {
                         fontSize: "0.875rem",
                         color: "var(--accent)",
                         flexShrink: 0,
+                        overflow: "hidden",
                       }}
                     >
-                      {initial}
+                      {conv.contact?.photoUrl ? (
+                        <img src={conv.contact.photoUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; (e.currentTarget.parentElement as HTMLElement).innerText = initial; }} />
+                      ) : initial}
                     </div>
 
                     {/* Info */}

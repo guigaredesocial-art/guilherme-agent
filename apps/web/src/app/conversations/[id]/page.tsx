@@ -17,7 +17,7 @@ interface Lead { id: string; name: string; status: string }
 interface ConvDetail {
   id: string; aiEnabled: boolean; handoffRequested: boolean; status: string; channel: string;
   internalNotes?: string;
-  contact: { id: string; displayName?: string };
+  contact: { id: string; displayName?: string; photoUrl?: string };
   messages: Message[];
   lead?: Lead | null;
 }
@@ -224,8 +224,10 @@ export default function ConversationPage() {
             <Link href="/dashboard" style={{ color: "var(--muted)", textDecoration: "none", fontSize: "0.8rem", flexShrink: 0 }}>← Voltar</Link>
 
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", flex: 1, minWidth: 0 }}>
-              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--accent-dim)", border: "1px solid #adff2f30", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.875rem", color: "var(--accent)", flexShrink: 0 }}>
-                {(conv.contact?.displayName?.[0] ?? "?").toUpperCase()}
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--accent-dim)", border: "1px solid #adff2f30", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.875rem", color: "var(--accent)", flexShrink: 0, overflow: "hidden" }}>
+                {conv.contact?.photoUrl ? (
+                  <img src={conv.contact.photoUrl} alt={conv.contact?.displayName ?? ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                ) : (conv.contact?.displayName?.[0] ?? "?").toUpperCase()}
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>{conv.contact?.displayName ?? "Contato"}</div>

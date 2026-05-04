@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { flushConversation } from "@/lib/flush";
+import { fetchProfilePicture } from "@/lib/channels/evolution";
 import type { ChannelMessage } from "@/lib/ai-rules/evaluate";
 
 // Evolution API não tem HMAC nativo — validar via bearer token custom
@@ -96,6 +97,17 @@ export async function POST(req: NextRequest) {
 
     if (!contactIdentity) {
       return new Response(JSON.stringify({ error: "db error", details: "contactIdentity not found after create/findUnique" }), { status: 500 });
+    }
+
+    // Buscar e salvar foto de perfil (em background, sem bloquear)
+    const contactId = contactIdentity.contactId;
+    const currentPhoto = (contactIdentity.contact as any).photoUrl;
+    if (!currentPhoto) {
+      fetchProfilePicture(externalId).then((url) => {
+        if (url) {
+          prisma.contact.update({ where: { id: contactId }, data: { photoUrl: url } as any }).catch(() => {});
+        }
+      }).catch(() => {});
     }
 
     // Upsert conversation

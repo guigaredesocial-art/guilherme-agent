@@ -80,6 +80,20 @@ export async function getEvolutionQR(): Promise<string | null> {
   }
 }
 
+export async function fetchProfilePicture(externalId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${BASE()}/chat/fetchProfilePictureUrl/${INSTANCE()}?number=${encodeURIComponent(externalId)}`,
+      { headers: HEADERS() }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.profilePictureUrl ?? data?.picture ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function sendTextEvolution(externalId: string, text: string): Promise<void> {
   // externalId deve conter @ (ex: 5571...@c.us ou @lid)
   if (!externalId.includes("@")) {

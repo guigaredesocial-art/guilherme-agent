@@ -222,6 +222,11 @@ Regras ABSOLUTAS:
       EXCEPTION WHEN duplicate_object THEN NULL; END $$
     `);
 
+    // Foto de perfil do WhatsApp
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "photoUrl" TEXT`
+    );
+
     console.log(JSON.stringify({ event: "migrations.ok" }));
   } catch (err) {
     console.error(JSON.stringify({ event: "migrations.failed", err: String(err) }));
