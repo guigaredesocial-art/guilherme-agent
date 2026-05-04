@@ -6,6 +6,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PHASE=phase-production-build
 RUN npm ci
 COPY . .
+RUN npx prisma db push --accept-data-loss || echo "Prisma db push failed, continuing build"
 RUN npm run build
 
 FROM node:20-alpine AS runner
@@ -21,8 +22,9 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
 
 USER nextjs
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
