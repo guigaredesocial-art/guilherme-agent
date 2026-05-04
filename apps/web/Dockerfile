@@ -27,4 +27,4 @@ COPY --from=builder /app/prisma ./prisma
 USER nextjs
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
+CMD ["sh", "-c", "npx -y prisma db push --accept-data-loss || true ; node server.js"]
