@@ -17,7 +17,7 @@ export interface ChatMessage {
 export async function chat(
   systemPrompt: string,
   history: ChatMessage[],
-  model = "claude-sonnet-4-6",
+  model = "claude-3-5-sonnet-20241022",
   temperature = 0.7
 ): Promise<string> {
   const client = getClient();

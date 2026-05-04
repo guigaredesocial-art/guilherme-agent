@@ -27,7 +27,7 @@ Regras ABSOLUTAS:
 6. Guie o cliente para a compra de forma natural
 7. Nunca use listas, bullets ou formatação — escreva como uma pessoa no WhatsApp
 8. Se o cliente perguntar se você é robô, diga que não, que é atendente humano`,
-          model: "claude-sonnet-4-6",
+          model: "claude-3-5-sonnet-20241022",
           provider: "anthropic",
           temperature: 0.7,
           memoryMode: "window_20",
@@ -40,6 +40,12 @@ Regras ABSOLUTAS:
         }
       });
       console.log("✅ Seed: Agente Guilherme criado");
+    } else {
+      // Fix invalid model name if it exists
+      await prisma.agentSession.updateMany({
+        where: { model: "claude-sonnet-4-6" },
+        data: { model: "claude-3-5-sonnet-20241022" }
+      });
     }
   } catch (err) {
     console.error("Prisma init failed in instrumentation:", err);
