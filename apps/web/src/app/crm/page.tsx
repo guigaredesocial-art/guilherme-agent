@@ -197,6 +197,39 @@ export default function CrmPage() {
 
   const totalPipeline = leads.filter((l) => ["em_negociacao", "reuniao_agendada"].includes(l.status)).length;
 
+  function exportCSV() {
+    const STATUS_LABEL: Record<string, string> = {
+      novo: "Novo",
+      em_negociacao: "Em Negociação",
+      reuniao_agendada: "Reunião Agendada",
+      fechado: "Fechado",
+      perdido: "Perdido",
+    };
+    const headers = ["Nome", "WhatsApp", "Status", "Tipo de Negócio", "Dor Principal", "Volume Mensal", "Ferramenta Atual", "Reunião", "Anotações", "Criado em"];
+    const rows = leads.map((l) => [
+      l.name,
+      l.whatsapp,
+      STATUS_LABEL[l.status] ?? l.status,
+      l.businessType ?? "",
+      l.painPoint ?? "",
+      l.monthlyVolume ?? "",
+      l.currentTool ?? "",
+      l.meetingDate ? new Date(l.meetingDate).toLocaleString("pt-BR") : "",
+      l.notes ?? "",
+      new Date(l.createdAt).toLocaleDateString("pt-BR"),
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <DashboardLayout>
       <div style={{ padding: "1.75rem 2rem", minHeight: "100vh" }}>
@@ -208,9 +241,16 @@ export default function CrmPage() {
               {leads.length} lead{leads.length !== 1 ? "s" : ""} · {totalPipeline} em negociação ativa
             </p>
           </div>
-          <Link href="/dashboard" className="btn-ghost" style={{ textDecoration: "none", fontSize: "0.825rem" }}>
-            + Nova Conversa
-          </Link>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            {leads.length > 0 && (
+              <button onClick={exportCSV} className="btn-ghost" style={{ fontSize: "0.825rem" }}>
+                ⬇ Exportar CSV
+              </button>
+            )}
+            <Link href="/dashboard" className="btn-ghost" style={{ textDecoration: "none", fontSize: "0.825rem" }}>
+              + Nova Conversa
+            </Link>
+          </div>
         </div>
 
         {/* Pipeline summary bar */}
