@@ -122,6 +122,28 @@ export default function InsightsPage() {
   const router = useRouter();
   const [data, setData] = useState<InsightData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [sentMsg, setSentMsg] = useState("");
+
+  async function sendReport() {
+    setSending(true);
+    setSentMsg("");
+    const token = getToken();
+    const res = await fetch("/api/reports/send", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      setSentMsg(`✓ Enviado para ${json.sentTo}`);
+    } else {
+      const txt = await res.text();
+      setSentMsg(`⚠ ${txt}`);
+    }
+    setSending(false);
+    setTimeout(() => setSentMsg(""), 6000);
+  }
 
   useEffect(() => {
     const token = getToken();
@@ -145,11 +167,28 @@ export default function InsightsPage() {
     <DashboardLayout>
       <div style={{ padding: "1.75rem 2rem", minHeight: "100vh" }}>
         {/* Header */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>Insights</h1>
-          <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>
-            Análise de desempenho do agente e conversas · últimos 7 dias
-          </p>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+          <div>
+            <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>Insights</h1>
+            <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>
+              Análise de desempenho do agente e conversas · últimos 7 dias
+            </p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.375rem" }}>
+            <button
+              onClick={sendReport}
+              disabled={sending}
+              className="btn-ghost"
+              style={{ fontSize: "0.825rem" }}
+            >
+              {sending ? "Enviando..." : "📧 Enviar Relatório por Email"}
+            </button>
+            {sentMsg && (
+              <span style={{ fontSize: "0.75rem", color: sentMsg.startsWith("✓") ? "#22c55e" : "#f59e0b" }}>
+                {sentMsg}
+              </span>
+            )}
+          </div>
         </div>
 
         {loading || !data ? (
