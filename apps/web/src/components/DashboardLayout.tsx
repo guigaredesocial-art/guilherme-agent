@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const NAV = [
   { href: "/dashboard",     icon: "◈",  label: "Dashboard" },
@@ -21,6 +22,21 @@ interface Props {
 export default function DashboardLayout({ children, whatsappStatus }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    function fetchAlerts() {
+      const token = document.cookie.split(";").find((c) => c.trim().startsWith("token="))?.split("=")[1] ?? "";
+      if (!token) return;
+      fetch("/api/alerts", { headers: { authorization: `Bearer ${token}` } })
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => d && setAlertCount(d.total ?? 0))
+        .catch(() => {});
+    }
+    fetchAlerts();
+    const t = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   function logout() {
     document.cookie = "token=; path=/; max-age=0";
@@ -121,7 +137,22 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
                 >
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.href === "/crm" && alertCount > 0 && (
+                  <span style={{
+                    background: "#ef4444",
+                    color: "#fff",
+                    fontSize: "0.6rem",
+                    fontWeight: 700,
+                    borderRadius: "9999px",
+                    padding: "1px 6px",
+                    minWidth: 16,
+                    textAlign: "center",
+                    animation: "pulse 2s infinite",
+                  }}>
+                    {alertCount}
+                  </span>
+                )}
               </Link>
             );
           })}

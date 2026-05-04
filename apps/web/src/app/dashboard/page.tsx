@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [alerts, setAlerts] = useState<{ hotLeads: number; priceAlerts: number; hotConvs: { id: string; name: string; score: number }[] } | null>(null);
 
   function loadData() {
     const token = getToken();
@@ -40,10 +41,12 @@ export default function DashboardPage() {
     Promise.all([
       fetch("/api/conversations", { headers: { authorization: `Bearer ${token}` } }).then((r) => r.json()),
       fetch("/api/health").then((r) => r.json()),
+      fetch("/api/alerts", { headers: { authorization: `Bearer ${token}` } }).then((r) => r.ok ? r.json() : null),
     ])
-      .then(([convs, health]) => {
+      .then(([convs, health, alertData]) => {
         setConversations(Array.isArray(convs) ? convs : []);
         setWhatsappStatus(health?.evolution ?? "");
+        if (alertData) setAlerts(alertData);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -99,6 +102,59 @@ export default function DashboardPage() {
             Conversas em tempo real · atualiza a cada 10s
           </p>
         </div>
+
+        {/* 🔥 Banner de alertas comportamentais */}
+        {alerts && (alerts.hotLeads > 0 || alerts.priceAlerts > 0) && (
+          <div style={{
+            marginBottom: "1rem",
+            padding: "0.875rem 1.25rem",
+            background: "#ef444410",
+            border: "1px solid #ef444430",
+            borderLeft: "4px solid #ef4444",
+            borderRadius: "0.5rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}>
+            <span style={{ fontSize: "1.25rem" }}>🔥</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, color: "#ef4444", fontSize: "0.875rem", marginBottom: "2px" }}>
+                Ação necessária agora
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "#aaa", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                {alerts.hotLeads > 0 && (
+                  <span>🔥 {alerts.hotLeads} lead{alerts.hotLeads > 1 ? "s" : ""} quente{alerts.hotLeads > 1 ? "s" : ""} — responda agora para fechar!</span>
+                )}
+                {alerts.priceAlerts > 0 && (
+                  <span>💰 {alerts.priceAlerts} cliente{alerts.priceAlerts > 1 ? "s" : ""} perguntou preço — acompanhe!</span>
+                )}
+              </div>
+              {alerts.hotConvs.length > 0 && (
+                <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.375rem", flexWrap: "wrap" }}>
+                  {alerts.hotConvs.map((c) => (
+                    <a
+                      key={c.id}
+                      href={`/conversations/${c.id}`}
+                      style={{
+                        fontSize: "0.72rem", padding: "2px 10px", borderRadius: "9999px",
+                        background: "#ef444420", color: "#ef4444", border: "1px solid #ef444440",
+                        textDecoration: "none", fontWeight: 600,
+                      }}
+                    >
+                      {c.name} · {c.score}pts →
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Link href="/crm" style={{ textDecoration: "none" }}>
+              <button style={{ fontSize: "0.78rem", padding: "0.4rem 1rem", borderRadius: "0.375rem", background: "#ef4444", color: "#fff", border: "none", cursor: "pointer", fontWeight: 700, whiteSpace: "nowrap" }}>
+                Ver no CRM →
+              </button>
+            </Link>
+          </div>
+        )}
 
         {/* Stats */}
         <div

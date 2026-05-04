@@ -79,6 +79,7 @@ model Conversation {
   internalNotes    String        @default("")
   lastUserMsgAt    DateTime?
   followupSentAt   DateTime?
+  offerSentAt      DateTime?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   messages         Message[]

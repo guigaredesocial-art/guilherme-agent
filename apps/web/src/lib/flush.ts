@@ -64,23 +64,46 @@ async function autoClassify(convId: string, userText: string, currentStatus: str
       console.log(JSON.stringify({ event: "auto_tags", convId, newTags }));
     }
 
-    // Atualizar lead score
+    // Score aditivo — múltiplos fatores somam
     const finalTags = mergedTags;
-    let score = 0;
-    if (finalTags.includes("🔥 quente"))      score = Math.max(score, 80);
-    if (finalTags.includes("📅 agendamento")) score = Math.max(score, 70);
-    if (finalTags.includes("💰 preço"))       score = Math.max(score, 50);
-    if (finalTags.includes("❓ dúvida"))       score = Math.max(score, 30);
-    if (finalTags.includes("❄️ frio"))         score = Math.max(score, 10);
     const finalStatus = newStatus ?? currentStatus;
-    if (finalStatus === "reuniao_agendada") score = Math.min(100, score + 15);
-    if (finalStatus === "qualificado")      score = Math.min(100, score + 10);
+    let score = 0;
+    if (finalTags.includes("🔥 quente"))      score += 40;
+    if (finalTags.includes("📅 agendamento")) score += 25;
+    if (finalTags.includes("💰 preço"))       score += 20;
+    if (finalTags.includes("❓ dúvida"))       score += 10;
+    if (finalTags.includes("❄️ frio"))         score -= 30;
+    if (finalStatus === "reuniao_agendada")   score += 30;
+    else if (finalStatus === "qualificado")   score += 15;
+    else if (finalStatus === "fechado")       score = 100;
+    else if (finalStatus === "perdido")       score = Math.min(score, 5);
+    score = Math.max(0, Math.min(100, score));
 
-    await prisma.lead.updateMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Buscar lead associado para atualizar score e cancelar drips
+    const lead = await prisma.lead.findFirst({
       where: { conversationId: convId } as any,
-      data: { leadScore: score } as any,
     });
+    if (lead) {
+      await prisma.lead.update({
+        where: { id: (lead as any).id },
+        data: { leadScore: score } as any,
+      });
+
+      // Cliente respondeu → cancela drip D+1 (não spamear quem está falando)
+      await (prisma as any).dripMessage.updateMany({
+        where: { leadId: (lead as any).id, step: 1, status: "pending" },
+        data: { status: "cancelled" },
+      });
+
+      // Lead quente (score>=70) → cancela TODOS os drips pendentes
+      if (score >= 70) {
+        await (prisma as any).dripMessage.updateMany({
+          where: { leadId: (lead as any).id, status: "pending" },
+          data: { status: "cancelled" },
+        });
+        console.log(JSON.stringify({ event: "drip.cancelled_hot", leadId: (lead as any).id, score }));
+      }
+    }
   } catch (e) {
     console.error("autoClassify error:", e);
   }

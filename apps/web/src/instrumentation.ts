@@ -159,6 +159,11 @@ Regras ABSOLUTAS:
       EXCEPTION WHEN duplicate_object THEN NULL; END $$
     `);
 
+    // Automação comportamental
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "offerSentAt" TIMESTAMP(3)`
+    );
+
     // Fase 3-D: Multiusuário
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "Operator" ADD COLUMN IF NOT EXISTS "role" TEXT NOT NULL DEFAULT 'operator'`
@@ -307,7 +312,67 @@ Regras ABSOLUTAS:
         } catch { /* ignore */ }
       }
 
-      // 4. Drip sequence (D+1, D+3, D+7)
+      // 4. COMPORTAMENTO: Cliente perguntou preço → oferta especial (2h sem resposta)
+      const duasHorasAtras = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      const comPreco = await prisma.conversation.findMany({
+        where: {
+          status: { notIn: ["encerrado"] },
+          offerSentAt: null,
+        } as any,
+        include: {
+          contact: { include: { identities: true } },
+          messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        },
+      });
+      for (const conv of comPreco) {
+        const tags = (conv as any).tags ?? "";
+        if (!tags.includes("💰 preço")) continue;
+        const last = conv.messages[0];
+        if (!last || last.role !== "assistant") continue;
+        if (last.createdAt > duasHorasAtras) continue;
+        const extId = conv.contact.identities[0]?.externalId;
+        if (!extId) continue;
+        try {
+          await sendTextEvolution(extId, "Oi! Vi que você ficou com dúvida sobre os valores 😊 Posso te dar uma condição especial hoje. Quer que eu te passe mais detalhes?");
+          await prisma.conversation.update({
+            where: { id: conv.id },
+            data: { offerSentAt: now } as any,
+          });
+          console.log(JSON.stringify({ event: "behavior.price_offer", convId: conv.id }));
+        } catch { /* ignore */ }
+      }
+
+      // 5. COMPORTAMENTO: Lead quente sumiu 48h → re-engajamento diferenciado
+      const quarentaOitoHAtras = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+      const leadsQuentesSumidos = await prisma.lead.findMany({
+        where: { leadScore: { gte: 60 } } as any,
+        include: {
+          conversation: {
+            include: { contact: { include: { identities: true } } },
+          },
+        },
+      });
+      for (const lead of leadsQuentesSumidos) {
+        const conv = lead.conversation;
+        if (!conv) continue;
+        if ((conv as any).status === "encerrado") continue;
+        const lastMsg = (conv as any).lastUserMsgAt;
+        if (!lastMsg || new Date(lastMsg) > quarentaOitoHAtras) continue;
+        const followup = (conv as any).followupSentAt;
+        if (followup && new Date(followup) > quarentaOitoHAtras) continue;
+        const extId = conv.contact.identities[0]?.externalId;
+        if (!extId) continue;
+        try {
+          await sendTextEvolution(extId, `Oi ${lead.name.split(" ")[0]}! Sei que você demonstrou interesse 🔥 Ainda posso te ajudar? Estou reservando uma condição especial para você!`);
+          await prisma.conversation.update({
+            where: { id: conv.id },
+            data: { followupSentAt: now } as any,
+          });
+          console.log(JSON.stringify({ event: "behavior.hot_reengagement", leadId: lead.id }));
+        } catch { /* ignore */ }
+      }
+
+      // 6. Drip sequence (D+1, D+3, D+7)
       const dripDevidos = await (prisma as any).dripMessage.findMany({
         where: { status: "pending", scheduledAt: { lte: now } },
         include: { lead: { include: { conversation: { include: { contact: { include: { identities: true } } } } } } },
