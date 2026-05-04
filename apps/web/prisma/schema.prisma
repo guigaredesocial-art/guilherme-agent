@@ -175,5 +175,6 @@ model Operator {
   email     String   @unique
   name      String?
   password  String
+  role      String   @default("operator")
   createdAt DateTime @default(now())
 }

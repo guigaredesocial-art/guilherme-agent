@@ -9,6 +9,7 @@ const NAV = [
   { href: "/chat-interno",  icon: "🧠", label: "Chat Interno" },
   { href: "/reminders",     icon: "⏰", label: "Lembretes" },
   { href: "/agents",        icon: "◆",  label: "Agente" },
+  { href: "/settings",      icon: "⚙",  label: "Configurações" },
   { href: "/qrcode",        icon: "◻",  label: "QR Code" },
 ];
 

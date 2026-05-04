@@ -132,6 +132,17 @@ Regras ABSOLUTAS:
       `ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "reminderSentAt" TIMESTAMP(3)`
     );
 
+    // Fase 3-D: Multiusuário
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Operator" ADD COLUMN IF NOT EXISTS "role" TEXT NOT NULL DEFAULT 'operator'`
+    );
+    // Promover o operador mais antigo a admin automaticamente
+    await prisma.$executeRawUnsafe(`
+      UPDATE "Operator" SET "role" = 'admin'
+      WHERE "id" = (SELECT "id" FROM "Operator" ORDER BY "createdAt" ASC LIMIT 1)
+        AND "role" = 'operator'
+    `);
+
     // Fase 3-A: Horário de funcionamento
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "AgentSession" ADD COLUMN IF NOT EXISTS "businessHoursEnabled" BOOLEAN NOT NULL DEFAULT false`
