@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   // Processar apenas mensagens recebidas (não enviadas por nós)
   // Evolution v1.x usa "messages.upsert", v2.x usa "MESSAGES_UPSERT"
-  const evtNorm = payload.event?.toUpperCase().replace(".", "_");
+  const evtNorm = payload.event ? payload.event.toUpperCase().replace(".", "_") : "";
   if (evtNorm !== "MESSAGES_UPSERT") {
     return Response.json({ ok: true, skipped: true });
   }
@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
       },
       include: { contact: true },
     });
-  } catch {
+  } catch (e) {
+    console.error("DB Create Error:", e);
     contactIdentity = await prisma.contactIdentity.findUnique({
       where: { channel_externalId: { channel: "evolution", externalId } },
       include: { contact: true },
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!contactIdentity) {
-    return new Response("db error", { status: 500 });
+    return new Response(JSON.stringify({ error: "db error", details: "contactIdentity not found after create/findUnique" }), { status: 500 });
   }
 
   // Upsert conversation

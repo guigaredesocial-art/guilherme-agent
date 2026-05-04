@@ -36,17 +36,16 @@ export async function ensureEvolutionInstance(): Promise<SessionState> {
   }
 
   // 2. Reconfigurar webhook SEMPRE (URL muda em redeploy)
+  // Evolution API v2: body plano — não usar objeto aninhado "webhook" (400 na v2).
   await fetch(`${base}/webhook/set/${name}`, {
     method: "POST",
     headers,
     body: JSON.stringify({
-      webhook: {
-        enabled: true,
-        url: `${APP_URL()}/api/webhooks/evolution`,
-        byEvents: false,
-        base64: true,
-        events: ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
-      },
+      enabled: true,
+      url: `${APP_URL()}/api/webhooks/evolution`,
+      webhookByEvents: false,
+      webhookBase64: true,
+      events: ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
     }),
   }).catch((e) => console.error(JSON.stringify({ event: "evolution.webhook_set_failed", err: String(e) })));
 
