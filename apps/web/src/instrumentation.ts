@@ -4,6 +4,15 @@ export async function register() {
 
   const { prisma } = await import("@/lib/prisma");
 
+  try {
+    const { execSync } = require("child_process");
+    console.log("Running prisma db push...");
+    execSync("npx -y prisma db push --accept-data-loss", { stdio: "inherit" });
+    console.log("Prisma db push done.");
+  } catch (err) {
+    console.error("Prisma db push failed in instrumentation:", err);
+  }
+
   // Aplicar migrações incrementais de forma idempotente
   try {
     await prisma.$executeRawUnsafe(
