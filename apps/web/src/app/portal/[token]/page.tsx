@@ -28,6 +28,7 @@ export default function PortalPage() {
   const { token } = useParams() as { token: string };
   const [data, setData] = useState<PortalData | null>(null);
   const [error, setError] = useState(false);
+  const [companyName, setCompanyName] = useState("{companyName}");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   async function load() {
@@ -41,6 +42,9 @@ export default function PortalPage() {
   }
 
   useEffect(() => {
+    fetch("/api/config").then((r) => r.ok ? r.json() : null).then((d) => {
+      if (d?.companyName) setCompanyName(d.companyName);
+    }).catch(() => {});
     load();
     const t = setInterval(load, 30000);
     return () => clearInterval(t);
@@ -92,9 +96,9 @@ export default function PortalPage() {
           background: "#adff2f15", border: "1px solid #adff2f44",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: "0.8rem", fontWeight: 700, color: "#adff2f",
-        }}>G</div>
+        }}>{companyName[0]?.toUpperCase() ?? "G"}</div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "#adff2f" }}>Guilherme</div>
+          <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "#adff2f" }}>{companyName}</div>
           <div style={{ fontSize: "0.68rem", color: "#555", textTransform: "uppercase", letterSpacing: "0.05em" }}>Portal do Cliente</div>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.375rem" }}>
@@ -223,7 +227,7 @@ export default function PortalPage() {
         {/* Rodapé info */}
         <div style={{ textAlign: "center", fontSize: "0.68rem", color: "#333", padding: "0.5rem 0" }}>
           Atualizado {new Date(data.updatedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-          {" · "}Guilherme · Painel de Vendas IA
+          {" · "}{companyName} · Painel de Vendas IA
         </div>
       </div>
     </div>

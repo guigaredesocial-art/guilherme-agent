@@ -23,6 +23,15 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [alertCount, setAlertCount] = useState(0);
+  const [companyName, setCompanyName] = useState("Guilherme");
+  const [agentLabel, setAgentLabel] = useState("Painel de Vendas IA");
+
+  useEffect(() => {
+    fetch("/api/config").then((r) => r.ok ? r.json() : null).then((d) => {
+      if (d?.companyName) setCompanyName(d.companyName);
+      if (d?.agentLabel) setAgentLabel(d.agentLabel);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     function fetchAlerts() {
@@ -91,9 +100,9 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
                 fontSize: "0.75rem",
               }}
             >
-              G
+              {companyName[0]?.toUpperCase() ?? "G"}
             </span>
-            Guilherme
+            {companyName}
           </div>
           <div
             style={{
@@ -105,7 +114,7 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
               letterSpacing: "0.06em",
             }}
           >
-            Painel de Vendas IA
+            {agentLabel}
           </div>
         </div>
 
@@ -230,7 +239,7 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
             <span>⎋</span> Sair
           </button>
           <div style={{ fontSize: "0.68rem", color: "#3a3a3a" }}>
-            Deefasabit IA · v2.0
+            {companyName} · IA v2.0
           </div>
         </div>
       </aside>
