@@ -1,4 +1,4 @@
-const CACHE = "guilherme-v1";
+const CACHE = "defesabit-v2";
 const OFFLINE_URL = "/dashboard";
 
 // Instala e pré-cacheia a página principal
