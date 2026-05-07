@@ -34,9 +34,9 @@ export default function LoginPage() {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div className="card" style={{ width: 380 }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🤖</div>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>Guilherme Agent</h1>
-          <p style={{ color: "var(--muted)", fontSize: "0.875rem" }}>Painel de Vendas</p>
+          <img src="/defesabit-logo.svg" alt="DefesaBit" style={{ width: 56, height: 56, margin: "0 auto 0.75rem" }} />
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>DefesaBit</h1>
+          <p style={{ color: "var(--muted)", fontSize: "0.875rem" }}>Painel de Atendimento IA</p>
         </div>
         <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
@@ -48,7 +48,7 @@ export default function LoginPage() {
               required
               style={{
                 width: "100%", marginTop: "0.25rem", padding: "0.625rem",
-                background: "#1a1a1a", border: "1px solid var(--card-border)",
+                background: "var(--input-bg)", border: "1px solid var(--card-border)",
                 borderRadius: "0.375rem", color: "var(--foreground)", outline: "none",
                 boxSizing: "border-box"
               }}
@@ -63,7 +63,7 @@ export default function LoginPage() {
               required
               style={{
                 width: "100%", marginTop: "0.25rem", padding: "0.625rem",
-                background: "#1a1a1a", border: "1px solid var(--card-border)",
+                background: "var(--input-bg)", border: "1px solid var(--card-border)",
                 borderRadius: "0.375rem", color: "var(--foreground)", outline: "none",
                 boxSizing: "border-box"
               }}

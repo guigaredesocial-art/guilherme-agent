@@ -17,9 +17,111 @@ interface EvolutionPayload {
   instance: string;
   data: {
     key?: { id?: string; remoteJid?: string; fromMe?: boolean };
-    message?: { conversation?: string; extendedTextMessage?: { text?: string } };
+    message?: {
+      conversation?: string;
+      extendedTextMessage?: { text?: string };
+      audioMessage?: { seconds?: number; ptt?: boolean; mimetype?: string };
+      imageMessage?: { caption?: string; mimetype?: string };
+      videoMessage?: { caption?: string; mimetype?: string };
+      documentMessage?: { caption?: string; fileName?: string; mimetype?: string };
+      stickerMessage?: object;
+      locationMessage?: { degreesLatitude?: number; degreesLongitude?: number };
+      reactionMessage?: { text?: string };
+      base64?: string; // preenchido quando webhookBase64: true
+    };
+    messageType?: string;
     pushName?: string;
   };
+}
+
+// Transcreve áudio via OpenAI Whisper (só roda se OPENAI_API_KEY estiver configurado)
+async function transcribeAudioBase64(base64: string, mimetype: string): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey || !base64) return "";
+  try {
+    const buffer = Buffer.from(base64, "base64");
+    const ext = mimetype?.includes("ogg") ? "ogg"
+      : mimetype?.includes("webm") ? "webm"
+      : mimetype?.includes("mp4") ? "mp4"
+      : "mp3";
+
+    // Monta FormData com o arquivo de áudio
+    const { FormData, Blob } = await import("node:buffer").then(() => globalThis);
+    const form = new FormData();
+    const blob = new Blob([buffer], { type: mimetype || "audio/ogg" });
+    form.append("file", blob, `audio.${ext}`);
+    form.append("model", "whisper-1");
+    form.append("language", "pt");
+
+    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: form as BodyInit,
+    });
+
+    if (!res.ok) {
+      console.error(JSON.stringify({ event: "whisper.error", status: res.status }));
+      return "";
+    }
+    const data = await res.json();
+    return data?.text?.trim() ?? "";
+  } catch (e) {
+    console.error(JSON.stringify({ event: "whisper.transcribe_failed", err: String(e) }));
+    return "";
+  }
+}
+
+// Extrai texto ou placeholder de qualquer tipo de mensagem do WhatsApp
+async function extractMessageText(data: EvolutionPayload["data"]): Promise<string | null> {
+  const msg = data?.message;
+  if (!msg) return null;
+
+  // Mensagens de texto simples
+  const text = msg.conversation ?? msg.extendedTextMessage?.text ?? "";
+  if (text.trim()) return text.trim();
+
+  // Áudio / voz
+  if (msg.audioMessage) {
+    const transcribed = await transcribeAudioBase64(msg.base64 ?? "", msg.audioMessage.mimetype ?? "audio/ogg");
+    if (transcribed) return `🎵 Áudio: "${transcribed}"`;
+    const secs = msg.audioMessage.seconds;
+    return secs ? `[🎵 Áudio de ${secs}s — responda pedindo para digitar]` : "[🎵 Áudio recebido — responda pedindo para digitar]";
+  }
+
+  // Imagem (com ou sem legenda)
+  if (msg.imageMessage) {
+    const caption = msg.imageMessage.caption?.trim();
+    return caption ? `[📷 Imagem] ${caption}` : "[📷 Imagem recebida]";
+  }
+
+  // Vídeo
+  if (msg.videoMessage) {
+    const caption = msg.videoMessage.caption?.trim();
+    return caption ? `[📹 Vídeo] ${caption}` : "[📹 Vídeo recebido]";
+  }
+
+  // Documento / arquivo
+  if (msg.documentMessage) {
+    const caption = msg.documentMessage.caption?.trim();
+    const fileName = msg.documentMessage.fileName ?? "";
+    if (caption) return `[📄 ${fileName || "Documento"}] ${caption}`;
+    return fileName ? `[📄 Documento: ${fileName}]` : "[📄 Documento recebido]";
+  }
+
+  // Sticker
+  if (msg.stickerMessage) return "[🌟 Sticker]";
+
+  // Localização
+  if (msg.locationMessage) {
+    const lat = msg.locationMessage.degreesLatitude?.toFixed(5);
+    const lng = msg.locationMessage.degreesLongitude?.toFixed(5);
+    return `[📍 Localização: ${lat}, ${lng}]`;
+  }
+
+  // Reação (não precisa responder, mas registrar)
+  if (msg.reactionMessage) return null; // ignora reações silenciosamente
+
+  return null; // tipo desconhecido
 }
 
 export async function POST(req: NextRequest) {
@@ -65,11 +167,11 @@ export async function POST(req: NextRequest) {
       return Response.json({ ok: true, duplicate: true });
     }
 
-    const text =
-      payload.data?.message?.conversation ??
-      payload.data?.message?.extendedTextMessage?.text ??
-      "";
+    const text = await extractMessageText(payload.data);
 
+    if (text === null) {
+      return Response.json({ ok: true, skipped: "reaction_or_unknown" });
+    }
     if (!text.trim()) {
       return Response.json({ ok: true, skipped: "empty_text" });
     }

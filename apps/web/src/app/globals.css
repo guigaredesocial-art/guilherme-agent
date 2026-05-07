@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* ─── Tema Escuro (padrão) ─────────────────── */
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
@@ -12,6 +13,7 @@
   --muted: #6b7280;
   --muted-light: #9ca3af;
   --sidebar: #0d0d0d;
+  --input-bg: #141414;
 
   /* Status colors */
   --status-em-atendimento: #3b82f6;
@@ -21,10 +23,30 @@
   --status-danger: #ef4444;
 }
 
+/* ─── Tema Claro ───────────────────────────── */
+html.light {
+  color-scheme: light;
+  --background: #f5f5f5;
+  --foreground: #111111;
+  --accent: #5a9e00;
+  --accent-hover: #4a8500;
+  --accent-dim: #5a9e0015;
+  --card: #ffffff;
+  --card-border: #e5e7eb;
+  --card-hover: #f9fafb;
+  --muted: #6b7280;
+  --muted-light: #4b5563;
+  --sidebar: #ffffff;
+  --input-bg: #f3f4f6;
+}
+
 html {
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+html.light {
+  color-scheme: light;
 }
 
 * {
@@ -143,7 +165,7 @@ body {
 .input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  background: #141414;
+  background: var(--input-bg);
   border: 1px solid var(--card-border);
   border-radius: 0.375rem;
   color: var(--foreground);

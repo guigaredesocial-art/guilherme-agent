@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "@/components/ThemeProvider";
 
 const NAV = [
   { href: "/dashboard",     icon: "◈",  label: "Dashboard" },
@@ -22,9 +23,10 @@ interface Props {
 export default function DashboardLayout({ children, whatsappStatus }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, toggle } = useTheme();
   const [alertCount, setAlertCount] = useState(0);
-  const [companyName, setCompanyName] = useState("Guilherme");
-  const [agentLabel, setAgentLabel] = useState("Painel de Vendas IA");
+  const [companyName, setCompanyName] = useState("DefesaBit");
+  const [agentLabel, setAgentLabel] = useState("Painel de Atendimento IA");
 
   useEffect(() => {
     fetch("/api/config").then((r) => r.ok ? r.json() : null).then((d) => {
@@ -87,21 +89,12 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
               gap: "0.5rem",
             }}
           >
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "0.375rem",
-                background: "var(--accent-dim)",
-                border: "1px solid #adff2f44",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "0.75rem",
-              }}
-            >
-              {companyName[0]?.toUpperCase() ?? "G"}
-            </span>
+            {/* Logo SVG DefesaBit */}
+            <img
+              src="/defesabit-logo.svg"
+              alt="DefesaBit"
+              style={{ width: 28, height: 28, flexShrink: 0 }}
+            />
             {companyName}
           </div>
           <div
@@ -182,7 +175,7 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
               gap: "0.5rem",
               padding: "0.5rem 0.625rem",
               borderRadius: "0.375rem",
-              background: "#141414",
+              background: "var(--input-bg)",
               border: "1px solid var(--card-border)",
               marginBottom: "0.75rem",
             }}
@@ -210,6 +203,31 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
                 : "..."}
             </span>
           </div>
+          {/* Botão Dark / Light */}
+          <button
+            onClick={toggle}
+            title={theme === "dark" ? "Mudar para modo claro" : "Mudar para modo escuro"}
+            style={{
+              width: "100%",
+              padding: "0.45rem 0.75rem",
+              borderRadius: "0.375rem",
+              background: "transparent",
+              border: "1px solid var(--card-border)",
+              color: "var(--muted)",
+              fontSize: "0.72rem",
+              cursor: "pointer",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginBottom: "0.5rem",
+              transition: "all 0.15s",
+            }}
+          >
+            <span>{theme === "dark" ? "☀" : "🌙"}</span>
+            {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+          </button>
+
           <button
             onClick={logout}
             style={{
@@ -217,8 +235,8 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
               padding: "0.45rem 0.75rem",
               borderRadius: "0.375rem",
               background: "transparent",
-              border: "1px solid #2a2a2a",
-              color: "#555",
+              border: "1px solid var(--card-border)",
+              color: "var(--muted)",
               fontSize: "0.72rem",
               cursor: "pointer",
               textAlign: "left",
@@ -232,13 +250,13 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
               (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a2a";
-              (e.currentTarget as HTMLButtonElement).style.color = "#555";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--card-border)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)";
             }}
           >
             <span>⎋</span> Sair
           </button>
-          <div style={{ fontSize: "0.68rem", color: "#3a3a3a" }}>
+          <div style={{ fontSize: "0.68rem", color: "var(--muted)", opacity: 0.5 }}>
             {companyName} · IA v2.0
           </div>
         </div>

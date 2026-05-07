@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Shield background -->
+  <path d="M20 3L5 9v10c0 9.5 6.5 17.5 15 20 8.5-2.5 15-10.5 15-20V9L20 3z" fill="#adff2f" opacity="0.15"/>
+  <path d="M20 3L5 9v10c0 9.5 6.5 17.5 15 20 8.5-2.5 15-10.5 15-20V9L20 3z" stroke="#adff2f" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- D letter -->
+  <text x="13" y="27" font-family="system-ui, sans-serif" font-size="16" font-weight="800" fill="#adff2f">D</text>
+</svg>
