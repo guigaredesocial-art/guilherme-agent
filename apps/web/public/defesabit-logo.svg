@@ -1,7 +1,90 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
-  <!-- Shield background -->
-  <path d="M20 3L5 9v10c0 9.5 6.5 17.5 15 20 8.5-2.5 15-10.5 15-20V9L20 3z" fill="#adff2f" opacity="0.15"/>
-  <path d="M20 3L5 9v10c0 9.5 6.5 17.5 15 20 8.5-2.5 15-10.5 15-20V9L20 3z" stroke="#adff2f" stroke-width="1.5" stroke-linejoin="round"/>
-  <!-- D letter -->
-  <text x="13" y="27" font-family="system-ui, sans-serif" font-size="16" font-weight="800" fill="#adff2f">D</text>
+<svg width="100%" viewBox="0 0 680 340" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>DefesaBit — Logo Final</title>
+<desc>Logo final DefesaBit: agente robô com engrenagens no centro do fluxo usuário → agente → dashboard → resposta</desc>
+
+<rect x="0" y="0" width="680" height="340" rx="20" fill="#020b10"/>
+<rect x="0" y="0" width="680" height="340" rx="20" fill="none" stroke="#06b6d4" stroke-width="1.4"/>
+
+<!-- Usuário -->
+<circle cx="72" cy="148" r="26" fill="#051820" stroke="#06b6d4" stroke-width="1.2"/>
+<circle cx="72" cy="137" r="10" fill="#06b6d4" opacity="0.7"/>
+<path d="M52,162 Q72,148 92,162" fill="#051820" stroke="#06b6d4" stroke-width="1.2" stroke-linecap="round"/>
+
+<!-- seta usuário → agente -->
+<line x1="100" y1="148" x2="136" y2="148" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="4,3"/>
+<polygon points="136,144 144,148 136,152" fill="#06b6d4"/>
+
+<!-- Engrenagem grande -->
+<g transform="translate(216,148)">
+  <circle cx="0" cy="0" r="58" fill="none" stroke="#a78bfa" stroke-width="1" opacity="0.18"/>
+  <circle cx="0" cy="0" r="42" fill="#130928" stroke="#a78bfa" stroke-width="1.4"/>
+  <circle cx="0" cy="0" r="16" fill="#020b10" stroke="#a78bfa" stroke-width="1.2"/>
+  <rect x="-6" y="-64" width="12" height="14" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.7"/>
+  <rect x="-6" y="50"  width="12" height="14" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.7"/>
+  <rect x="-64" y="-6" width="14" height="12" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.7"/>
+  <rect x="50"  y="-6" width="14" height="12" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.7"/>
+  <rect x="27" y="-56" width="12" height="14" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.5" transform="rotate(45,33,-49)"/>
+  <rect x="-39" y="-56" width="12" height="14" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.5" transform="rotate(-45,-33,-49)"/>
+  <rect x="27"  y="42"  width="12" height="14" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.5" transform="rotate(-45,33,49)"/>
+  <rect x="-39" y="42"  width="12" height="14" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="1" opacity="0.5" transform="rotate(45,-33,49)"/>
+</g>
+
+<!-- Engrenagem pequena -->
+<g transform="translate(270,102)">
+  <circle cx="0" cy="0" r="22" fill="#130928" stroke="#a78bfa" stroke-width="1.2"/>
+  <circle cx="0" cy="0" r="8"  fill="#020b10" stroke="#a78bfa" stroke-width="1"/>
+  <rect x="-4" y="-27" width="8" height="10" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="0.8" opacity="0.7"/>
+  <rect x="-4" y="17"  width="8" height="10" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="0.8" opacity="0.7"/>
+  <rect x="-27" y="-4" width="10" height="8" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="0.8" opacity="0.7"/>
+  <rect x="17"  y="-4" width="10" height="8" rx="2" fill="#130928" stroke="#a78bfa" stroke-width="0.8" opacity="0.7"/>
+</g>
+
+<!-- Robô -->
+<rect x="192" y="90" width="48" height="40" rx="10" fill="#130928" stroke="#06b6d4" stroke-width="1.5"/>
+<rect x="200" y="103" width="12" height="9" rx="2.5" fill="#06b6d4"/>
+<rect x="220" y="103" width="12" height="9" rx="2.5" fill="#a78bfa" opacity="0.8"/>
+<line x1="216" y1="90" x2="216" y2="78" stroke="#06b6d4" stroke-width="1.6"/>
+<circle cx="216" cy="76" r="4" fill="#06b6d4"/>
+<rect x="207" y="130" width="18" height="10" rx="3" fill="#130928" stroke="#06b6d4" stroke-width="1"/>
+<rect x="184" y="140" width="64" height="48" rx="10" fill="#130928" stroke="#06b6d4" stroke-width="1.5"/>
+<rect x="196" y="150" width="40" height="26" rx="4" fill="#06b6d4" opacity="0.1" stroke="#06b6d4" stroke-width="0.7"/>
+<polyline points="199,164 205,154 211,170 217,158 223,164 229,164 235,164" fill="none" stroke="#06b6d4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="184" y1="158" x2="168" y2="158" stroke="#06b6d4" stroke-width="5" stroke-linecap="round"/>
+<line x1="168" y1="158" x2="162" y2="150" stroke="#06b6d4" stroke-width="3.5" stroke-linecap="round"/>
+<line x1="248" y1="158" x2="264" y2="152" stroke="#06b6d4" stroke-width="5" stroke-linecap="round"/>
+
+<!-- seta agente → dashboard -->
+<line x1="292" y1="148" x2="326" y2="148" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="4,3"/>
+<polygon points="326,144 334,148 326,152" fill="#06b6d4"/>
+
+<!-- Dashboard -->
+<rect x="336" y="108" width="90" height="80" rx="10" fill="#051820" stroke="#06b6d4" stroke-width="1.1"/>
+<rect x="336" y="108" width="90" height="13" rx="10" fill="#06b6d4" opacity="0.25"/>
+<rect x="336" y="114" width="90" height="7" rx="0" fill="#06b6d4" opacity="0.25"/>
+<rect x="350" y="152" width="11" height="28" rx="2" fill="#06b6d4" opacity="0.9"/>
+<rect x="367" y="142" width="11" height="38" rx="2" fill="#a78bfa" opacity="0.7"/>
+<rect x="384" y="148" width="11" height="32" rx="2" fill="#06b6d4" opacity="0.6"/>
+<rect x="401" y="136" width="11" height="44" rx="2" fill="#a78bfa" opacity="0.4"/>
+
+<!-- seta dashboard → resposta -->
+<line x1="428" y1="148" x2="460" y2="148" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="4,3"/>
+<polygon points="460,144 468,148 460,152" fill="#06b6d4"/>
+
+<!-- Balão resposta -->
+<rect x="470" y="116" width="112" height="64" rx="14" fill="#051820" stroke="#06b6d4" stroke-width="1.2"/>
+<polygon points="470,134 458,148 470,162" fill="#051820" stroke="#06b6d4" stroke-width="1" stroke-linejoin="round"/>
+<rect x="484" y="132" width="80" height="5" rx="2" fill="#06b6d4" opacity="0.9"/>
+<rect x="484" y="146" width="58" height="5" rx="2" fill="#06b6d4" opacity="0.55"/>
+<rect x="484" y="160" width="68" height="5" rx="2" fill="#06b6d4" opacity="0.3"/>
+<polyline points="546,122 553,129 564,118" fill="none" stroke="#06b6d4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="554,122 561,129 572,118" fill="none" stroke="#06b6d4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+
+<!-- Nome e tagline -->
+<text x="340" y="232" font-family="sans-serif" font-size="42" font-weight="800" fill="white" text-anchor="middle">Defesa<tspan fill="#06b6d4">Bit</tspan></text>
+<text x="340" y="258" font-family="sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle" letter-spacing="2">AGENTE INTELIGENTE · WHATSAPP · CRM</text>
+<line x1="160" y1="272" x2="520" y2="272" stroke="#06b6d4" stroke-width="0.6" opacity="0.25"/>
+<text x="340" y="292" font-family="sans-serif" font-size="11" fill="#8892a4" text-anchor="middle">Automatize. Conecte. Cresça.</text>
+<rect x="296" y="302" width="88" height="22" rx="11" fill="#06b6d4" opacity="0.12" stroke="#06b6d4" stroke-width="0.8"/>
+<circle cx="312" cy="313" r="4" fill="#06b6d4"/>
+<text x="350" y="318" font-family="monospace" font-size="10" fill="#06b6d4" text-anchor="middle" font-weight="700">24h · 7 dias</text>
 </svg>

@@ -34,7 +34,7 @@ export default function LoginPage() {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div className="card" style={{ width: 380 }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <img src="/defesabit-logo.svg" alt="DefesaBit" style={{ width: 56, height: 56, margin: "0 auto 0.75rem" }} />
+          <img src="/defesabit-logo.svg" alt="DefesaBit" style={{ width: "100%", maxWidth: 340, margin: "0 auto 1rem", display: "block" }} />
           <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>DefesaBit</h1>
           <p style={{ color: "var(--muted)", fontSize: "0.875rem" }}>Painel de Atendimento IA</p>
         </div>

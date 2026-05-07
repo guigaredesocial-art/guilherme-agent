@@ -89,11 +89,11 @@ export default function DashboardLayout({ children, whatsappStatus }: Props) {
               gap: "0.5rem",
             }}
           >
-            {/* Logo SVG DefesaBit */}
+            {/* Ícone DefesaBit (robo) */}
             <img
-              src="/defesabit-logo.svg"
+              src="/defesabit-icon.svg"
               alt="DefesaBit"
-              style={{ width: 28, height: 28, flexShrink: 0 }}
+              style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "0.375rem" }}
             />
             {companyName}
           </div>
