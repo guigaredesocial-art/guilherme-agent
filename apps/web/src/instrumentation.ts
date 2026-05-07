@@ -377,21 +377,68 @@ Regras ABSOLUTAS:
         } catch { /* ignore */ }
       }
 
-      // 6. Drip sequence (D+1, D+3, D+7)
+      // 6. Drip sequence (D+1, D+3, D+7) — personalizado por objeção
+      const { chat } = await import("@/lib/llm/anthropic");
       const dripDevidos = await (prisma as any).dripMessage.findMany({
         where: { status: "pending", scheduledAt: { lte: now } },
-        include: { lead: { include: { conversation: { include: { contact: { include: { identities: true } } } } } } },
+        include: {
+          lead: {
+            include: {
+              conversation: {
+                include: {
+                  contact: { include: { identities: true } },
+                  messages: { orderBy: { createdAt: "asc" as const }, take: 15 },
+                },
+              },
+            },
+          },
+        },
       });
       for (const drip of dripDevidos) {
         const extId = drip.lead.conversation?.contact?.identities?.[0]?.externalId;
         if (!extId) continue;
         try {
-          await sendTextEvolution(extId, drip.message);
+          // Personalizar mensagem com IA baseada na objeção detectada
+          let finalMessage = drip.message;
+          const conv = drip.lead.conversation;
+          const msgs = conv?.messages ?? [];
+          if (msgs.length >= 2) {
+            const transcript = msgs
+              .map((m: any) => `${m.role === "user" ? "CLIENTE" : "AGENTE"}: ${m.content.replace(/^\[MANUAL\]\s?/, "")}`)
+              .join("\n");
+            const firstName = (drip.lead.name ?? "").split(" ")[0] || "você";
+            const step = drip.step;
+
+            const stepContext = step === 1
+              ? "É o primeiro follow-up (D+1). Seja amigável e pergunte se ficou com dúvidas."
+              : step === 2
+              ? "É o follow-up D+3. Use prova social, mencione resultados de outros clientes."
+              : "É o último follow-up (D+7). Seja gentil, crie urgência leve, diga que pode encerrar o atendimento.";
+
+            const dripPrompt = `Você é um vendedor experiente fazendo follow-up no WhatsApp.
+Analise a conversa e identifique a objeção principal do lead (preço, confiança, tempo, necessidade ou nenhuma).
+${stepContext}
+Crie UMA mensagem curta e personalizada para ${firstName} que endereça diretamente a objeção identificada.
+Regras: máximo 3 frases, tom humano e natural, não seja robótico, em português brasileiro.
+Responda SOMENTE com o texto da mensagem, sem aspas, sem explicações.`;
+
+            try {
+              const personalized = await chat(
+                dripPrompt,
+                [{ role: "user", content: `Histórico:\n${transcript}` }],
+                "claude-haiku-4-5-20251001", // modelo rápido e barato para drip
+                0.7
+              );
+              if (personalized.trim()) finalMessage = personalized.trim();
+            } catch { /* usa mensagem padrão se IA falhar */ }
+          }
+
+          await sendTextEvolution(extId, finalMessage);
           await (prisma as any).dripMessage.update({
             where: { id: drip.id },
             data: { status: "sent", sentAt: now },
           });
-          console.log(JSON.stringify({ event: "drip.sent", dripId: drip.id, step: drip.step }));
+          console.log(JSON.stringify({ event: "drip.sent", dripId: drip.id, step: drip.step, personalized: finalMessage !== drip.message }));
         } catch { /* ignore */ }
       }
 

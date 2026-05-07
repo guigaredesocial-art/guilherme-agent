@@ -50,6 +50,33 @@ export default function PortalPage() {
     return () => clearInterval(t);
   }, [token]);
 
+  // Rastreamento: registra visita e tempo na proposta
+  useEffect(() => {
+    const startedAt = Date.now();
+
+    function sendLeft() {
+      const durationSeconds = Math.round((Date.now() - startedAt) / 1000);
+      navigator.sendBeacon(`/api/portal/${token}/track`, JSON.stringify({ event: "left", durationSeconds }));
+    }
+
+    // Registra que abriu o portal
+    fetch(`/api/portal/${token}/track`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ event: "viewed" }),
+    }).catch(() => {});
+
+    // Quando fechar a aba ou sair
+    window.addEventListener("beforeunload", sendLeft);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") sendLeft();
+    });
+
+    return () => {
+      window.removeEventListener("beforeunload", sendLeft);
+    };
+  }, [token]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [data?.messages.length]);

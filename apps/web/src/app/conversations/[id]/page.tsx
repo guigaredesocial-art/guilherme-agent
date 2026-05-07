@@ -29,6 +29,13 @@ interface Consultoria {
   sugestoes: string[];
   proximoPasso: string;
 }
+interface AssistData {
+  sentimento: string;
+  objecao: string;
+  urgencia: number;
+  resumo: string;
+  sugestoes: { texto: string; tom: string }[];
+}
 
 function getToken() {
   return document.cookie.split(";").find((c) => c.trim().startsWith("token="))?.split("=")[1] ?? "";
@@ -57,6 +64,9 @@ export default function ConversationPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newReminder, setNewReminder] = useState({ message: "", scheduledAt: "" });
   const [savingReminder, setSavingReminder] = useState(false);
+  // Co-Piloto (Agent Assist)
+  const [assist, setAssist] = useState<AssistData | null>(null);
+  const [loadingAssist, setLoadingAssist] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   async function loadConv() {
@@ -78,12 +88,32 @@ export default function ConversationPage() {
     if (res.ok) setReminders(await res.json());
   }
 
+  async function loadAssist() {
+    if (loadingAssist) return;
+    setLoadingAssist(true);
+    const token = getToken();
+    const res = await fetch(`/api/conversations/${id}/assist`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    });
+    if (res.ok) setAssist(await res.json());
+    setLoadingAssist(false);
+  }
+
   useEffect(() => {
     loadConv();
     loadReminders();
     const t = setInterval(loadConv, 5000);
     return () => clearInterval(t);
   }, [id]);
+
+  // Auto-refresh do Co-Piloto a cada 30s quando em handoff manual
+  useEffect(() => {
+    if (!conv || conv.aiEnabled) return;
+    loadAssist();
+    const t = setInterval(loadAssist, 30000);
+    return () => clearInterval(t);
+  }, [conv?.aiEnabled, conv?.messages.length]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -351,6 +381,72 @@ export default function ConversationPage() {
             })}
             <div ref={bottomRef} />
           </div>
+
+          {/* ─── Co-Piloto IA (só aparece no handoff manual) ─── */}
+          {!conv.aiEnabled && (
+            <div style={{ marginBottom: "0.625rem", flexShrink: 0 }}>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#a78bfa" }}>🧠 CO-PILOTO IA</span>
+                  {assist && (
+                    <span style={{ fontSize: "0.68rem", color: "var(--muted)", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: "9999px", padding: "1px 8px" }}>
+                      {assist.resumo}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={loadAssist}
+                  disabled={loadingAssist}
+                  style={{ fontSize: "0.68rem", color: "#a78bfa", background: "none", border: "1px solid #a78bfa40", borderRadius: "0.375rem", padding: "2px 8px", cursor: "pointer", opacity: loadingAssist ? 0.5 : 1 }}
+                >
+                  {loadingAssist ? "Analisando..." : "↻ Atualizar"}
+                </button>
+              </div>
+
+              {/* Badges de sentimento e objeção */}
+              {assist && (
+                <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "0.68rem", padding: "2px 10px", borderRadius: "9999px", background: "#a78bfa18", color: "#a78bfa", border: "1px solid #a78bfa40", fontWeight: 600 }}>
+                    {assist.sentimento === "irritado" ? "😤" : assist.sentimento === "ansioso" ? "😰" : assist.sentimento === "interessado" ? "🤔" : assist.sentimento === "indeciso" ? "😕" : assist.sentimento === "empolgado" ? "🔥" : assist.sentimento === "desconfiante" ? "🧐" : "😐"} {assist.sentimento}
+                  </span>
+                  {assist.objecao !== "nenhuma" && (
+                    <span style={{ fontSize: "0.68rem", padding: "2px 10px", borderRadius: "9999px", background: "#f59e0b18", color: "#f59e0b", border: "1px solid #f59e0b40", fontWeight: 600 }}>
+                      ⚠ Objeção: {assist.objecao}
+                    </span>
+                  )}
+                  <span style={{ fontSize: "0.68rem", padding: "2px 10px", borderRadius: "9999px", background: assist.urgencia >= 8 ? "#ef444418" : assist.urgencia >= 5 ? "#f59e0b18" : "#22c55e18", color: assist.urgencia >= 8 ? "#ef4444" : assist.urgencia >= 5 ? "#f59e0b" : "#22c55e", border: `1px solid ${assist.urgencia >= 8 ? "#ef444440" : assist.urgencia >= 5 ? "#f59e0b40" : "#22c55e40"}`, fontWeight: 600 }}>
+                    🎯 Urgência {assist.urgencia}/10
+                  </span>
+                </div>
+              )}
+
+              {/* Sugestões clicáveis */}
+              {assist && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+                  {assist.sugestoes.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setReply(s.texto)}
+                      title={s.tom}
+                      style={{ textAlign: "left", padding: "0.5rem 0.75rem", borderRadius: "0.375rem", background: "var(--card)", border: "1px solid #a78bfa30", cursor: "pointer", transition: "all 0.15s", width: "100%" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#a78bfa80"; (e.currentTarget as HTMLButtonElement).style.background = "#a78bfa08"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#a78bfa30"; (e.currentTarget as HTMLButtonElement).style.background = "var(--card)"; }}
+                    >
+                      <div style={{ fontSize: "0.78rem", color: "var(--foreground)", lineHeight: 1.4 }}>{s.texto}</div>
+                      <div style={{ fontSize: "0.65rem", color: "#a78bfa", marginTop: "3px", opacity: 0.8 }}>💡 {s.tom}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {!assist && !loadingAssist && (
+                <div style={{ textAlign: "center", padding: "0.75rem", color: "var(--muted)", fontSize: "0.78rem", background: "var(--card)", borderRadius: "0.5rem", border: "1px solid #a78bfa20" }}>
+                  🧠 Co-Piloto IA pronto. Clique em "Atualizar" para analisar a conversa.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Reply box */}
           <div style={{ display: "flex", gap: "0.625rem", flexShrink: 0 }}>
