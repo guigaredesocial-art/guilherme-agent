@@ -37,7 +37,9 @@ interface EvolutionPayload {
 // Transcreve áudio via OpenAI Whisper (só roda se OPENAI_API_KEY estiver configurado)
 async function transcribeAudioBase64(base64: string, mimetype: string): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey || !base64) return "";
+  if (!apiKey) { console.log(JSON.stringify({ event: "whisper.skip_no_key" })); return ""; }
+  if (!base64) { console.log(JSON.stringify({ event: "whisper.skip_no_base64" })); return ""; }
+
   try {
     const buffer = Buffer.from(base64, "base64");
     const ext = mimetype?.includes("ogg") ? "ogg"
@@ -45,10 +47,11 @@ async function transcribeAudioBase64(base64: string, mimetype: string): Promise<
       : mimetype?.includes("mp4") ? "mp4"
       : "mp3";
 
-    // Monta FormData com o arquivo de áudio
-    const { FormData, Blob } = await import("node:buffer").then(() => globalThis);
+    console.log(JSON.stringify({ event: "whisper.start", ext, mimeType: mimetype, bufferBytes: buffer.length }));
+
+    // FormData nativo do Node.js 18+ / Next.js 15
     const form = new FormData();
-    const blob = new Blob([buffer], { type: mimetype || "audio/ogg" });
+    const blob = new Blob([buffer], { type: mimetype || "audio/ogg; codecs=opus" });
     form.append("file", blob, `audio.${ext}`);
     form.append("model", "whisper-1");
     form.append("language", "pt");
@@ -56,15 +59,18 @@ async function transcribeAudioBase64(base64: string, mimetype: string): Promise<
     const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
-      body: form as BodyInit,
+      body: form,
     });
 
     if (!res.ok) {
-      console.error(JSON.stringify({ event: "whisper.error", status: res.status }));
+      const body = await res.text();
+      console.error(JSON.stringify({ event: "whisper.error", status: res.status, body }));
       return "";
     }
     const data = await res.json();
-    return data?.text?.trim() ?? "";
+    const text = data?.text?.trim() ?? "";
+    console.log(JSON.stringify({ event: "whisper.ok", chars: text.length }));
+    return text;
   } catch (e) {
     console.error(JSON.stringify({ event: "whisper.transcribe_failed", err: String(e) }));
     return "";
@@ -82,7 +88,20 @@ async function extractMessageText(data: EvolutionPayload["data"]): Promise<strin
 
   // Áudio / voz
   if (msg.audioMessage) {
-    const transcribed = await transcribeAudioBase64(msg.base64 ?? "", msg.audioMessage.mimetype ?? "audio/ogg");
+    // Log para ver exatamente o que a Evolution API envia (sem base64 poluir o log)
+    console.log(JSON.stringify({
+      event: "audio.received",
+      seconds: msg.audioMessage.seconds,
+      mimetype: msg.audioMessage.mimetype,
+      hasBase64: !!msg.base64,
+      base64Len: msg.base64?.length ?? 0,
+      msgKeys: Object.keys(msg),
+    }));
+
+    // A Evolution API coloca o base64 em data.message.base64 quando webhookBase64: true
+    const base64 = msg.base64 ?? "";
+    const mimetype = msg.audioMessage.mimetype ?? "audio/ogg; codecs=opus";
+    const transcribed = await transcribeAudioBase64(base64, mimetype);
     if (transcribed) return `🎵 Áudio: "${transcribed}"`;
     const secs = msg.audioMessage.seconds;
     return secs ? `[🎵 Áudio de ${secs}s — responda pedindo para digitar]` : "[🎵 Áudio recebido — responda pedindo para digitar]";
