@@ -30,6 +30,17 @@
   --scrollbar-thumb: #2a2a2a;
   --scrollbar-thumb-hover: #3a3a3a;
   --feedback-bg: #181818;
+  --avatar-bg: #1a1a1a;
+  --avatar-border: #2a2a2a;
+  --item-bg: #141414;
+  --tooltip-bg: #111111;
+  --tooltip-border: #1e1e1e;
+  --dim-text: #555555;
+  --msg-bot-bg: #161616;
+  --msg-bot-border: #2a2a2a;
+  --badge-operator-bg: #1a1a1a;
+  --badge-operator-color: #555555;
+  --badge-operator-border: #222222;
 
   /* Status colors */
   --status-em-atendimento: #3b82f6;
@@ -69,6 +80,17 @@ html.light {
   --scrollbar-thumb: #d1d5db;
   --scrollbar-thumb-hover: #b0b7c0;
   --feedback-bg: #f3f4f6;
+  --avatar-bg: #e5e7eb;
+  --avatar-border: #d1d5db;
+  --item-bg: #f3f4f6;
+  --tooltip-bg: #ffffff;
+  --tooltip-border: #e5e7eb;
+  --dim-text: #9ca3af;
+  --msg-bot-bg: #f3f4f6;
+  --msg-bot-border: #e5e7eb;
+  --badge-operator-bg: #f3f4f6;
+  --badge-operator-color: #6b7280;
+  --badge-operator-border: #e5e7eb;
 }
 
 html {
@@ -388,6 +410,58 @@ tbody tr:hover { background: var(--table-row-hover); }
   background: var(--background);
 }
 
+/* ─── Container de página ─── */
+.page-container {
+  padding: 1.75rem 2rem;
+  min-height: 100vh;
+}
+
+/* ─── Grids responsivos ─── */
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+.stats-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ─── Chat container (altura 100% da tela disponível) ─── */
+.chat-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1.5rem 2rem;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* ─── CRM detail panel ─── */
+.crm-detail-panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
+  position: sticky;
+  top: 1.75rem;
+}
+
 /* ─── Layout conversa mobile ─── */
 @media (max-width: 767px) {
   .conv-layout {
@@ -405,6 +479,24 @@ tbody tr:hover { background: var(--table-row-hover); }
 
 /* ─── Mobile (<768px) ─── */
 @media (max-width: 767px) {
+  /* Containers */
+  .page-container { padding: 1rem; }
+  .chat-screen { height: calc(100vh - 52px); padding: 0.75rem; }
+
+  /* Grids */
+  .stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+
+  /* CRM detail panel vira bloco abaixo do kanban */
+  .crm-detail-panel {
+    width: 100%;
+    position: static;
+    max-height: none;
+    margin-top: 1rem;
+  }
+
   /* Mostra top bar e botões mobile */
   .mobile-topbar { display: flex; }
   .mobile-menu-btn,

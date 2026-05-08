@@ -60,7 +60,7 @@ export default function ChatInternoPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ maxWidth: 780, margin: "0 auto", padding: "1.5rem 2rem", height: "100vh", display: "flex", flexDirection: "column" }}>
+      <div className="chat-screen">
         {/* Header */}
         <div style={{ marginBottom: "1rem", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
@@ -92,7 +92,7 @@ export default function ChatInternoPage() {
                       padding: "0.4rem 0.875rem",
                       borderRadius: "9999px",
                       border: "1px solid var(--card-border)",
-                      background: "#141414",
+                      background: "var(--input-bg)",
                       color: "var(--muted-light)",
                       fontSize: "0.78rem",
                       cursor: "pointer",
@@ -122,8 +122,8 @@ export default function ChatInternoPage() {
                     maxWidth: "82%",
                     padding: "0.625rem 0.9rem",
                     borderRadius: isBot ? "0.875rem 0.875rem 0.875rem 0.25rem" : "0.875rem 0.875rem 0.25rem 0.875rem",
-                    background: isBot ? "#161616" : "var(--accent-dim)",
-                    border: `1px solid ${isBot ? "#2a2a2a" : "#adff2f40"}`,
+                    background: isBot ? "var(--msg-bot-bg)" : "var(--accent-dim)",
+                    border: `1px solid ${isBot ? "var(--msg-bot-border)" : "#adff2f40"}`,
                     color: isBot ? "var(--foreground)" : "var(--accent)",
                     fontSize: "0.875rem",
                     lineHeight: 1.6,
@@ -138,7 +138,7 @@ export default function ChatInternoPage() {
 
           {loading && (
             <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "0.875rem" }}>
-              <div style={{ padding: "0.625rem 0.9rem", background: "#161616", border: "1px solid #2a2a2a", borderRadius: "0.875rem 0.875rem 0.875rem 0.25rem", color: "var(--muted)", fontSize: "0.875rem" }}>
+              <div style={{ padding: "0.625rem 0.9rem", background: "var(--msg-bot-bg)", border: "1px solid var(--msg-bot-border)", borderRadius: "0.875rem 0.875rem 0.875rem 0.25rem", color: "var(--muted)", fontSize: "0.875rem" }}>
                 <span style={{ animation: "pulse 1s infinite" }}>...</span>
               </div>
             </div>

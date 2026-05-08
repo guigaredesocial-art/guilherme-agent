@@ -103,7 +103,7 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "1.75rem 2rem", minHeight: "100vh" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto" }} className="page-container">
         <div style={{ marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>⚙ Configurações</h1>
           <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>Gerencie usuários e acesso ao painel</p>
@@ -131,9 +131,9 @@ export default function SettingsPage() {
                     borderRadius: "9999px",
                     fontSize: "0.68rem",
                     fontWeight: 700,
-                    background: isAdmin ? "var(--accent-dim)" : "#1a1a1a",
-                    color: isAdmin ? "var(--accent)" : "#555",
-                    border: `1px solid ${isAdmin ? "#adff2f30" : "#222"}`,
+                    background: isAdmin ? "var(--accent-dim)" : "var(--badge-operator-bg)",
+                    color: isAdmin ? "var(--accent)" : "var(--badge-operator-color)",
+                    border: `1px solid ${isAdmin ? "#adff2f30" : "var(--badge-operator-border)"}`,
                   }}
                 >
                   {isAdmin ? "Admin" : "Operador"}
@@ -185,13 +185,13 @@ export default function SettingsPage() {
                     alignItems: "center",
                     gap: "0.875rem",
                     padding: "0.75rem 0.875rem",
-                    background: op.id === myId ? "#adff2f05" : "#141414",
+                    background: op.id === myId ? "var(--accent-dim)" : "var(--item-bg)",
                     borderRadius: "0.5rem",
                     border: `1px solid ${op.id === myId ? "var(--accent)" : "var(--card-border)"}`,
                   }}
                 >
                   {/* Avatar */}
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: op.role === "admin" ? "var(--accent-dim)" : "#1a1a1a", border: `1px solid ${op.role === "admin" ? "#adff2f44" : "#2a2a2a"}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: op.role === "admin" ? "var(--accent)" : "#555", fontSize: "0.8rem", flexShrink: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: op.role === "admin" ? "var(--accent-dim)" : "var(--avatar-bg)", border: `1px solid ${op.role === "admin" ? "#adff2f44" : "var(--avatar-border)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: op.role === "admin" ? "var(--accent)" : "var(--dim-text)", fontSize: "0.8rem", flexShrink: 0 }}>
                     {(op.name ?? op.email).slice(0, 1).toUpperCase()}
                   </div>
 
@@ -205,7 +205,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Role badge */}
-                  <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "2px 10px", borderRadius: "9999px", background: op.role === "admin" ? "var(--accent-dim)" : "#1a1a1a", color: op.role === "admin" ? "var(--accent)" : "#555", border: `1px solid ${op.role === "admin" ? "#adff2f30" : "#222"}`, flexShrink: 0 }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "2px 10px", borderRadius: "9999px", background: op.role === "admin" ? "var(--accent-dim)" : "var(--badge-operator-bg)", color: op.role === "admin" ? "var(--accent)" : "var(--badge-operator-color)", border: `1px solid ${op.role === "admin" ? "#adff2f30" : "var(--badge-operator-border)"}`, flexShrink: 0 }}>
                     {op.role === "admin" ? "Admin" : "Operador"}
                   </span>
 
@@ -231,7 +231,7 @@ export default function SettingsPage() {
             <div style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, marginBottom: "0.875rem" }}>
               Adicionar Usuário
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <div className="form-grid-2" style={{ marginBottom: "0.75rem" }}>
               <div>
                 <label style={{ fontSize: "0.8rem", color: "var(--muted)", display: "block", marginBottom: "4px" }}>Nome</label>
                 <input className="input" placeholder="Ex: João Silva" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
@@ -257,7 +257,7 @@ export default function SettingsPage() {
             <button onClick={createOperator} disabled={creating} className="btn-primary" style={{ fontSize: "0.825rem" }}>
               {creating ? "Criando..." : "+ Criar Usuário"}
             </button>
-            <p style={{ fontSize: "0.72rem", color: "#444", marginTop: "0.75rem", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.75rem", lineHeight: 1.5 }}>
               Admin pode criar/remover usuários e ver todas as configurações. Operador só acessa conversas e CRM.
             </p>
           </div>

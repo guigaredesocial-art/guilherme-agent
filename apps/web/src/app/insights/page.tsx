@@ -69,7 +69,7 @@ function StatCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: "1.625rem", fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
         <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "3px" }}>{label}</div>
-        {sub && <div style={{ fontSize: "0.7rem", color: "#555", marginTop: "2px" }}>{sub}</div>}
+        {sub && <div style={{ fontSize: "0.7rem", color: "var(--dim-text)", marginTop: "2px" }}>{sub}</div>}
         {delta !== undefined && (
           <div style={{ fontSize: "0.7rem", marginTop: "4px", color: delta >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>
             {delta >= 0 ? "▲" : "▼"} {Math.abs(delta)}% vs semana anterior
@@ -81,11 +81,11 @@ function StatCard({
 }
 
 const CUSTOM_TOOLTIP_STYLE = {
-  background: "#111",
-  border: "1px solid #1e1e1e",
+  background: "var(--tooltip-bg)",
+  border: "1px solid var(--tooltip-border)",
   borderRadius: "0.5rem",
   fontSize: "0.8rem",
-  color: "#ededed",
+  color: "var(--foreground)",
   padding: "0.5rem 0.875rem",
 };
 
@@ -165,9 +165,9 @@ export default function InsightsPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "1.75rem 2rem", minHeight: "100vh" }}>
+      <div className="page-container">
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "0.75rem" }}>
           <div>
             <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>Insights</h1>
             <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>
@@ -192,7 +192,7 @@ export default function InsightsPage() {
         </div>
 
         {loading || !data ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem" }}>
+          <div className="stats-grid-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="card" style={{ height: 90, opacity: 0.4 }} />
             ))}
@@ -200,14 +200,7 @@ export default function InsightsPage() {
         ) : (
           <>
             {/* ── Stat cards ── */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "0.75rem",
-                marginBottom: "1.5rem",
-              }}
-            >
+            <div className="stats-grid-3" style={{ marginBottom: "1.5rem" }}>
               <StatCard
                 icon="💬" label="Total de Conversas" color="var(--accent)"
                 value={data.totalConversas}
@@ -250,7 +243,7 @@ export default function InsightsPage() {
                       <stop offset="95%" stopColor="#adff2f" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e1e1e" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" />
                   <XAxis dataKey="label" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
@@ -265,7 +258,7 @@ export default function InsightsPage() {
             </div>
 
             {/* ── Pie charts ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+            <div className="charts-grid" style={{ marginBottom: "1rem" }}>
               {/* Conversas por status */}
               <div className="card">
                 <h3 style={{ fontWeight: 600, fontSize: "0.9rem", marginBottom: "1rem" }}>
@@ -354,7 +347,7 @@ export default function InsightsPage() {
                 <p style={{ fontSize: "0.825rem", color: "var(--muted)" }}>
                   Você marcou <strong style={{ color: "#ef4444" }}>{data.correcoesTotais}</strong> respostas como ruins com correção.
                 </p>
-                <div style={{ marginTop: "0.875rem", padding: "0.75rem 1rem", background: "#141414", borderRadius: "0.375rem", border: "1px solid var(--card-border)", fontSize: "0.8rem", color: "var(--muted)" }}>
+                <div style={{ marginTop: "0.875rem", padding: "0.75rem 1rem", background: "var(--item-bg)", borderRadius: "0.375rem", border: "1px solid var(--card-border)", fontSize: "0.8rem", color: "var(--muted)" }}>
                   💡 <strong style={{ color: "var(--foreground)" }}>Dica:</strong> Acesse o Agente e adicione esses exemplos ao System Prompt para treinar respostas melhores.
                 </div>
               </div>

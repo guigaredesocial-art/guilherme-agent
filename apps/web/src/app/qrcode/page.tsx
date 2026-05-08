@@ -38,7 +38,7 @@ export default function QRCodePage() {
 
   return (
     <DashboardLayout whatsappStatus={status}>
-      <div style={{ padding: "1.75rem 2rem", minHeight: "100vh" }}>
+      <div className="page-container">
         <div style={{ marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>Conectar WhatsApp</h1>
           <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>Escaneie o QR code para vincular o número ao bot</p>
@@ -86,7 +86,7 @@ export default function QRCodePage() {
                     style={{ width: 240, height: 240, display: "block", borderRadius: "0.375rem" }}
                   />
                 </div>
-                <p style={{ color: "#555", fontSize: "0.75rem" }}>
+                <p style={{ color: "var(--dim-text)", fontSize: "0.75rem" }}>
                   QR atualiza automaticamente a cada 5 segundos
                 </p>
               </div>

@@ -92,7 +92,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout whatsappStatus={whatsappStatus}>
-      <div style={{ padding: "1.75rem 2rem", minHeight: "100vh" }}>
+      <div className="page-container">
         {/* Header */}
         <div style={{ marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
               <div style={{ fontWeight: 700, color: "#ef4444", fontSize: "0.875rem", marginBottom: "2px" }}>
                 Ação necessária agora
               </div>
-              <div style={{ fontSize: "0.78rem", color: "#aaa", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <div style={{ fontSize: "0.78rem", color: "var(--muted)", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {alerts.hotLeads > 0 && (
                   <span>🔥 {alerts.hotLeads} lead{alerts.hotLeads > 1 ? "s" : ""} quente{alerts.hotLeads > 1 ? "s" : ""} — responda agora para fechar!</span>
                 )}
@@ -157,14 +157,7 @@ export default function DashboardPage() {
         )}
 
         {/* Stats */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
+        <div className="stats-grid-4" style={{ marginBottom: "1.25rem" }}>
           {[
             { label: "Conversas", value: stats.total,        color: "var(--accent)", icon: "💬" },
             { label: "IA Ativa",  value: stats.aiAtiva,      color: "#22c55e",       icon: "🤖" },
@@ -283,7 +276,7 @@ export default function DashboardPage() {
                       cursor: "pointer",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.borderColor = "#333";
+                      (e.currentTarget as HTMLDivElement).style.borderColor = "var(--input-focus-border)";
                       (e.currentTarget as HTMLDivElement).style.background = "var(--card-hover)";
                     }}
                     onMouseLeave={(e) => {
@@ -297,8 +290,8 @@ export default function DashboardPage() {
                         width: 38,
                         height: 38,
                         borderRadius: "50%",
-                        background: "#1a1a1a",
-                        border: "1px solid #2a2a2a",
+                        background: "var(--avatar-bg)",
+                        border: "1px solid var(--avatar-border)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -366,7 +359,7 @@ export default function DashboardPage() {
 
                     {/* Right side */}
                     <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.375rem" }}>
-                      <div style={{ fontSize: "0.7rem", color: "#555" }}>
+                      <div style={{ fontSize: "0.7rem", color: "var(--dim-text)" }}>
                         {new Date(conv.updatedAt).toLocaleString("pt-BR", {
                           hour: "2-digit",
                           minute: "2-digit",

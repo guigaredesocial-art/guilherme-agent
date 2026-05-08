@@ -80,7 +80,7 @@ function LeadCard({
     <div
       onClick={onClick}
       style={{
-        background: isSelected ? "#adff2f06" : isHot ? "#ef444406" : "#161616",
+        background: isSelected ? "var(--accent-dim)" : isHot ? "#ef444406" : "var(--subtle-bg3)",
         border: `1px solid ${isSelected ? "var(--accent)" : isHot ? "#ef444440" : color + "30"}`,
         borderLeft: `3px solid ${isHot ? "#ef4444" : color}`,
         borderRadius: "0.5rem",
@@ -151,14 +151,14 @@ function LeadCard({
       )}
 
       {/* Footer: data + mover */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.5rem", borderTop: "1px solid #1e1e1e", paddingTop: "0.4rem" }}>
-        <span style={{ fontSize: "0.68rem", color: "#555" }}>{date}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.5rem", borderTop: "1px solid var(--table-row-border)", paddingTop: "0.4rem" }}>
+        <span style={{ fontSize: "0.68rem", color: "var(--dim-text)" }}>{date}</span>
         <div style={{ display: "flex", gap: "2px" }} onClick={(e) => e.stopPropagation()}>
           {colIndex > 0 && (
             <button
               onClick={onMoveLeft}
               title="Mover para estágio anterior"
-              style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#555", cursor: "pointer", fontSize: "0.65rem", padding: "1px 5px", lineHeight: 1 }}
+              style={{ background: "none", border: "1px solid var(--avatar-border)", borderRadius: "3px", color: "var(--dim-text)", cursor: "pointer", fontSize: "0.65rem", padding: "1px 5px", lineHeight: 1 }}
             >
               ←
             </button>
@@ -167,7 +167,7 @@ function LeadCard({
             <button
               onClick={onMoveRight}
               title="Avançar estágio"
-              style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "3px", color: color, cursor: "pointer", fontSize: "0.65rem", padding: "1px 5px", lineHeight: 1 }}
+              style={{ background: "none", border: "1px solid var(--avatar-border)", borderRadius: "3px", color: color, cursor: "pointer", fontSize: "0.65rem", padding: "1px 5px", lineHeight: 1 }}
             >
               →
             </button>
@@ -276,9 +276,9 @@ export default function CrmPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ padding: "1.75rem 2rem", minHeight: "100vh" }}>
+      <div className="page-container">
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.75rem" }}>
           <div>
             <h1 style={{ fontSize: "1.375rem", fontWeight: 700, marginBottom: "0.25rem" }}>CRM / Leads</h1>
             <p style={{ color: "var(--muted)", fontSize: "0.825rem" }}>
@@ -329,7 +329,7 @@ export default function CrmPage() {
             {COLUMNS.map((col) => {
               const count = leads.filter((l) => l.status === col.key).length;
               return (
-                <div key={col.key} style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.3rem 0.75rem", borderRadius: "9999px", background: count > 0 ? col.color + "18" : "#141414", border: `1px solid ${count > 0 ? col.color + "40" : "#1e1e1e"}`, fontSize: "0.75rem", fontWeight: 600, color: count > 0 ? col.color : "#555" }}>
+                <div key={col.key} style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.3rem 0.75rem", borderRadius: "9999px", background: count > 0 ? col.color + "18" : "var(--item-bg)", border: `1px solid ${count > 0 ? col.color + "40" : "var(--card-border)"}`, fontSize: "0.75rem", fontWeight: 600, color: count > 0 ? col.color : "var(--dim-text)" }}>
                   {col.emoji} {col.label} <span style={{ opacity: 0.7 }}>({count})</span>
                 </div>
               );
@@ -338,13 +338,13 @@ export default function CrmPage() {
         )}
 
         {/* Kanban board + detail panel */}
-        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", flexWrap: "wrap" }}>
           {/* Kanban columns */}
           <div style={{ flex: 1, minWidth: 0, overflowX: "auto" }}>
             {loading ? (
               <div style={{ display: "flex", gap: "0.75rem" }}>
                 {COLUMNS.map((c) => (
-                  <div key={c.key} style={{ flex: "0 0 200px", height: 300, background: "#111", borderRadius: "0.5rem", opacity: 0.4 }} />
+                  <div key={c.key} style={{ flex: "0 0 200px", height: 300, background: "var(--card)", borderRadius: "0.5rem", opacity: 0.4 }} />
                 ))}
               </div>
             ) : filteredLeads.length === 0 ? (
@@ -366,19 +366,19 @@ export default function CrmPage() {
                       key={col.key}
                       style={{
                         flex: "0 0 200px",
-                        background: "#0d0d0d",
+                        background: "var(--subtle-bg)",
                         borderRadius: "0.5rem",
-                        border: "1px solid #1a1a1a",
+                        border: "1px solid var(--card-border)",
                         display: "flex",
                         flexDirection: "column",
                         maxHeight: "calc(100vh - 230px)",
                       }}
                     >
                       {/* Column header */}
-                      <div style={{ padding: "0.75rem 0.875rem", borderBottom: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <div style={{ padding: "0.75rem 0.875rem", borderBottom: "1px solid var(--card-border)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         <div style={{ width: 8, height: 8, borderRadius: "50%", background: col.color, flexShrink: 0 }} />
                         <span style={{ fontSize: "0.78rem", fontWeight: 700, color: col.color, flex: 1 }}>{col.label}</span>
-                        <span style={{ fontSize: "0.72rem", color: "#555", background: "#1a1a1a", borderRadius: "9999px", padding: "1px 7px", fontWeight: 600 }}>
+                        <span style={{ fontSize: "0.72rem", color: "var(--dim-text)", background: "var(--avatar-bg)", borderRadius: "9999px", padding: "1px 7px", fontWeight: 600 }}>
                           {colLeads.length}
                         </span>
                       </div>
@@ -386,7 +386,7 @@ export default function CrmPage() {
                       {/* Cards */}
                       <div style={{ padding: "0.625rem", overflowY: "auto", flex: 1 }}>
                         {colLeads.length === 0 ? (
-                          <div style={{ textAlign: "center", padding: "2rem 0.5rem", color: "#333", fontSize: "0.75rem" }}>
+                          <div style={{ textAlign: "center", padding: "2rem 0.5rem", color: "var(--muted)", fontSize: "0.75rem" }}>
                             Vazio
                           </div>
                         ) : (
@@ -413,20 +413,7 @@ export default function CrmPage() {
 
           {/* Detail panel */}
           {selected && (
-            <div
-              style={{
-                width: 300,
-                flexShrink: 0,
-                background: "var(--card)",
-                border: "1px solid var(--card-border)",
-                borderRadius: "0.5rem",
-                padding: "1.25rem",
-                overflowY: "auto",
-                maxHeight: "calc(100vh - 200px)",
-                position: "sticky",
-                top: "1.75rem",
-              }}
-            >
+            <div className="crm-detail-panel">
               {/* Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
                 <div>
@@ -461,7 +448,7 @@ export default function CrmPage() {
 
                 {/* Score badge no painel */}
                 {selected.leadScore > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", background: selected.leadScore >= 70 ? "#ef444410" : "#141414", borderRadius: "0.375rem", border: `1px solid ${selected.leadScore >= 70 ? "#ef444430" : "var(--card-border)"}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", background: selected.leadScore >= 70 ? "#ef444410" : "var(--item-bg)", borderRadius: "0.375rem", border: `1px solid ${selected.leadScore >= 70 ? "#ef444430" : "var(--card-border)"}` }}>
                     <ScoreBadge score={selected.leadScore} />
                     <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
                       {selected.leadScore >= 70 ? "Lead quente — responda agora!" : selected.leadScore >= 50 ? "Lead morno" : "Lead frio"}
