@@ -246,7 +246,7 @@ export default function ConversationPage() {
 
   return (
     <DashboardLayout>
-      <div style={{ display: "flex", height: "100vh", maxWidth: 1100, margin: "0 auto", padding: "1.5rem 2rem", gap: "1rem" }}>
+      <div className="conv-layout" style={{ display: "flex", height: "100vh", maxWidth: 1100, margin: "0 auto", padding: "1.5rem 2rem", gap: "1rem" }}>
         {/* ─── Coluna principal: chat ─────────────────────────── */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           {/* Header */}
@@ -267,7 +267,7 @@ export default function ConversationPage() {
 
             <select value={conv.status} onChange={(e) => setStatus(e.target.value)} style={{ padding: "0.3rem 2rem 0.3rem 0.75rem", borderRadius: "9999px", background: `${statusCfg.color}18`, color: statusCfg.color, border: `1px solid ${statusCfg.color}40`, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", outline: "none", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(statusCfg.color)}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0.625rem center" }}>
               {Object.entries(STATUS_CFG).map(([key, cfg]) => (
-                <option key={key} value={key} style={{ background: "#111", color: "#fff" }}>{cfg.label}</option>
+                <option key={key} value={key} style={{ background: "var(--card)", color: "var(--foreground)" }}>{cfg.label}</option>
               ))}
             </select>
 
@@ -346,7 +346,7 @@ export default function ConversationPage() {
               return (
                 <div key={msg.id} style={{ display: "flex", flexDirection: "column", alignItems: isBot ? "flex-end" : "flex-start", marginBottom: "0.875rem" }}>
                   {isManual && <div style={{ fontSize: "0.68rem", color: "#3b82f6", marginBottom: "3px", paddingRight: "4px" }}>👤 Operador</div>}
-                  <div style={{ maxWidth: "78%", padding: "0.6rem 0.875rem", borderRadius: isBot ? "0.875rem 0.875rem 0.25rem 0.875rem" : "0.875rem 0.875rem 0.875rem 0.25rem", background: isBot ? (isManual ? "#1e3a5f" : "#adff2f12") : "#1c1c1c", border: `1px solid ${isBot ? (isManual ? "#3b82f640" : "#adff2f30") : "#2a2a2a"}`, color: isBot ? (isManual ? "#93c5fd" : "var(--accent)") : "var(--foreground)", fontSize: "0.875rem", lineHeight: 1.5 }}>
+                  <div style={{ maxWidth: "78%", padding: "0.6rem 0.875rem", borderRadius: isBot ? "0.875rem 0.875rem 0.25rem 0.875rem" : "0.875rem 0.875rem 0.875rem 0.25rem", background: isBot ? (isManual ? "#1e3a5f" : "var(--accent-dim)") : "var(--msg-user-bg)", border: `1px solid ${isBot ? (isManual ? "#3b82f640" : "var(--accent-dim)") : "var(--msg-user-border)"}`, color: isBot ? (isManual ? "#93c5fd" : "var(--accent)") : "var(--foreground)", fontSize: "0.875rem", lineHeight: 1.5 }}>
                     <div style={{ whiteSpace: "pre-wrap" }}>{displayContent}</div>
                     <div style={{ fontSize: "0.68rem", color: "var(--muted)", marginTop: "4px", textAlign: isBot ? "left" : "right", opacity: 0.7 }}>
                       {new Date(msg.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
@@ -367,7 +367,7 @@ export default function ConversationPage() {
                     </div>
                   )}
                   {feedbackOpen === msg.id && (
-                    <div style={{ maxWidth: "78%", marginTop: "0.375rem", background: "#1a1a1a", border: "1px solid var(--card-border)", borderRadius: "0.5rem", padding: "0.75rem" }}>
+                    <div style={{ maxWidth: "78%", marginTop: "0.375rem", background: "var(--feedback-bg)", border: "1px solid var(--card-border)", borderRadius: "0.5rem", padding: "0.75rem" }}>
                       <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginBottom: "0.5rem" }}>O que o bot deveria ter respondido?</div>
                       <textarea value={correction} onChange={(e) => setCorrection(e.target.value)} rows={3} className="input" placeholder="Descreva a resposta ideal..." style={{ marginBottom: "0.5rem" }} />
                       <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -456,9 +456,9 @@ export default function ConversationPage() {
         </div>
 
         {/* ─── Painel lateral: Notas | Consultoria | Lembretes ──── */}
-        <div style={{ width: 300, flexShrink: 0, display: "flex", flexDirection: "column", gap: "0" }}>
+        <div className="conv-side-panel" style={{ width: 300, flexShrink: 0, display: "flex", flexDirection: "column", gap: "0" }}>
           {/* Tabs */}
-          <div style={{ display: "flex", background: "#111", border: "1px solid var(--card-border)", borderRadius: "0.5rem 0.5rem 0 0", overflow: "hidden" }}>
+          <div style={{ display: "flex", background: "var(--subtle-bg)", border: "1px solid var(--card-border)", borderRadius: "0.5rem 0.5rem 0 0", overflow: "hidden" }}>
             {(["notas", "consultoria", "lembretes"] as const).map((tab) => (
               <button
                 key={tab}
@@ -466,7 +466,7 @@ export default function ConversationPage() {
                 style={{
                   flex: 1,
                   padding: "0.625rem 0.25rem",
-                  background: activeTab === tab ? "#161616" : "transparent",
+                  background: activeTab === tab ? "var(--subtle-bg3)" : "transparent",
                   border: "none",
                   borderBottom: activeTab === tab ? "2px solid var(--accent)" : "2px solid transparent",
                   color: activeTab === tab ? "var(--accent)" : "var(--muted)",
@@ -513,7 +513,7 @@ export default function ConversationPage() {
                 {consultoria && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
                     {/* Chance de fechar */}
-                    <div className="card" style={{ padding: "0.875rem", background: "#0d0d0d" }}>
+                    <div className="card" style={{ padding: "0.875rem", background: "var(--subtle-bg)" }}>
                       <div style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>Chance de Fechar</div>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                         <div style={{ fontSize: "2rem", fontWeight: 800, color: chanceColor(consultoria.chanceFechamento) }}>
@@ -526,7 +526,7 @@ export default function ConversationPage() {
                         </div>
                       </div>
                       {/* Progress bar */}
-                      <div style={{ height: 6, background: "#1e1e1e", borderRadius: 3, marginTop: "0.5rem", overflow: "hidden" }}>
+                      <div style={{ height: 6, background: "var(--progress-track)", borderRadius: 3, marginTop: "0.5rem", overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${consultoria.chanceFechamento}%`, background: chanceColor(consultoria.chanceFechamento), borderRadius: 3, transition: "width 0.6s ease" }} />
                       </div>
                     </div>
@@ -571,7 +571,7 @@ export default function ConversationPage() {
             {activeTab === "lembretes" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
                 {/* Criar lembrete */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", padding: "0.75rem", background: "#0d0d0d", borderRadius: "0.5rem", border: "1px solid var(--card-border)" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", padding: "0.75rem", background: "var(--subtle-bg)", borderRadius: "0.5rem", border: "1px solid var(--card-border)" }}>
                   <div style={{ fontSize: "0.72rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Novo Lembrete</div>
                   <input
                     className="input"
@@ -599,7 +599,7 @@ export default function ConversationPage() {
                   reminders.map((r) => {
                     const overdue = r.status === "pending" && new Date(r.scheduledAt) < new Date();
                     return (
-                      <div key={r.id} style={{ background: "#0d0d0d", borderRadius: "0.5rem", border: `1px solid ${overdue ? "#ef444430" : "var(--card-border)"}`, padding: "0.625rem 0.75rem" }}>
+                      <div key={r.id} style={{ background: "var(--subtle-bg)", borderRadius: "0.5rem", border: `1px solid ${overdue ? "#ef444430" : "var(--card-border)"}`, padding: "0.625rem 0.75rem" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: "0.8rem", marginBottom: "3px" }}>{r.message}</div>

@@ -15,6 +15,22 @@
   --sidebar: #0d0d0d;
   --input-bg: #141414;
 
+  /* Cores temáticas adicionais */
+  --subtle-bg: #0d0d0d;
+  --subtle-bg2: #111111;
+  --subtle-bg3: #161616;
+  --msg-user-bg: #1c1c1c;
+  --msg-user-border: #2a2a2a;
+  --progress-track: #1e1e1e;
+  --table-head-bg: #0d0d0d;
+  --table-row-border: #1e1e1e;
+  --table-row-hover: #0f0f0f;
+  --nav-hover-bg: #161616;
+  --input-focus-border: #444;
+  --scrollbar-thumb: #2a2a2a;
+  --scrollbar-thumb-hover: #3a3a3a;
+  --feedback-bg: #181818;
+
   /* Status colors */
   --status-em-atendimento: #3b82f6;
   --status-qualificado: #f59e0b;
@@ -30,7 +46,7 @@ html.light {
   --foreground: #111111;
   --accent: #5a9e00;
   --accent-hover: #4a8500;
-  --accent-dim: #5a9e0015;
+  --accent-dim: #5a9e0018;
   --card: #ffffff;
   --card-border: #e5e7eb;
   --card-hover: #f9fafb;
@@ -38,6 +54,21 @@ html.light {
   --muted-light: #4b5563;
   --sidebar: #ffffff;
   --input-bg: #f3f4f6;
+
+  --subtle-bg: #f3f4f6;
+  --subtle-bg2: #f9fafb;
+  --subtle-bg3: #f0f2f4;
+  --msg-user-bg: #e5e7eb;
+  --msg-user-border: #d1d5db;
+  --progress-track: #e5e7eb;
+  --table-head-bg: #f3f4f6;
+  --table-row-border: #e5e7eb;
+  --table-row-hover: #f9fafb;
+  --nav-hover-bg: #f3f4f6;
+  --input-focus-border: #9ca3af;
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-thumb-hover: #b0b7c0;
+  --feedback-bg: #f3f4f6;
 }
 
 html {
@@ -64,8 +95,8 @@ body {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
 /* ─── Buttons ─────────────────────────────── */
 .btn-primary {
@@ -130,7 +161,7 @@ body {
   transition: border-color 0.15s, background 0.15s;
   cursor: pointer;
 }
-.card-hover:hover { border-color: #333; background: var(--card-hover); }
+.card-hover:hover { border-color: var(--input-focus-border); background: var(--card-hover); }
 
 /* ─── Badges ──────────────────────────────── */
 .badge-online {
@@ -174,7 +205,7 @@ body {
   transition: border-color 0.15s;
   font-family: inherit;
 }
-.input:focus { border-color: #333; }
+.input:focus { border-color: var(--input-focus-border); }
 .input::placeholder { color: var(--muted); }
 
 textarea.input { resize: vertical; }
@@ -191,11 +222,11 @@ select.input {
 /* ─── Table ───────────────────────────────── */
 .table-container { overflow-x: auto; border-radius: 0.5rem; border: 1px solid var(--card-border); }
 table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-thead { background: #0d0d0d; }
+thead { background: var(--table-head-bg); }
 th { padding: 0.75rem 1rem; text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--card-border); }
-td { padding: 0.75rem 1rem; border-bottom: 1px solid #161616; }
+td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--table-row-border); color: var(--foreground); }
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #0f0f0f; }
+tbody tr:hover { background: var(--table-row-hover); }
 
 /* ─── Tags / Chips ────────────────────────── */
 .chip {
@@ -223,7 +254,7 @@ tbody tr:hover { background: #0f0f0f; }
   border-left: 2px solid transparent;
   transition: all 0.15s;
 }
-.nav-link:hover { color: var(--foreground); background: #161616; }
+.nav-link:hover { color: var(--foreground); background: var(--nav-hover-bg); }
 .nav-link.active {
   background: var(--accent-dim);
   color: var(--accent);
@@ -255,7 +286,7 @@ tbody tr:hover { background: #0f0f0f; }
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background: #333;
+  background: var(--msg-user-border);
   border-radius: 20px;
   transition: 0.2s;
 }
@@ -266,11 +297,11 @@ tbody tr:hover { background: #0f0f0f; }
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background: #888;
+  background: var(--muted);
   border-radius: 50%;
   transition: 0.2s;
 }
-.toggle input:checked + .toggle-slider { background: #adff2f22; }
+.toggle input:checked + .toggle-slider { background: var(--accent-dim); }
 .toggle input:checked + .toggle-slider:before { background: var(--accent); transform: translateX(16px); }
 
 /* ─── Empty state ─────────────────────────── */
@@ -288,18 +319,115 @@ tbody tr:hover { background: #0f0f0f; }
 .empty-state-title { font-weight: 600; font-size: 1rem; color: var(--muted-light); }
 .empty-state-desc { font-size: 0.85rem; max-width: 280px; }
 
-/* ─── Responsivo Mobile ───────────────────── */
+/* ════════════════════════════════════════════
+   LAYOUT RESPONSIVO — CSS puro (sem JS)
+   ════════════════════════════════════════════ */
+
+/* Wrapper raiz */
+.layout-root {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* Top bar mobile — oculta no desktop */
+.mobile-topbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 52px;
+  background: var(--sidebar);
+  border-bottom: 1px solid var(--card-border);
+  align-items: center;
+  padding: 0 1rem;
+  gap: 0.75rem;
+  z-index: 100;
+}
+
+/* Botão hamburger e fechar — ocultos no desktop */
+.mobile-menu-btn,
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: 0.375rem;
+  flex-shrink: 0;
+}
+.mobile-menu-btn { font-size: 1.3rem; }
+.sidebar-close-btn { font-size: 1.5rem; color: var(--muted); }
+
+/* Overlay escuro */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: #00000088;
+  z-index: 150;
+}
+
+/* Sidebar */
+.layout-sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  width: 224px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: transform 0.25s ease;
+}
+
+/* Conteúdo principal */
+.layout-main {
+  margin-left: 224px;
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* ─── Layout conversa mobile ─── */
 @media (max-width: 767px) {
-  body { font-size: 15px; }
+  .conv-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 0.75rem !important;
+    overflow-y: auto;
+  }
+  .conv-side-panel {
+    width: 100% !important;
+    flex-shrink: unset !important;
+    margin-top: 1rem;
+  }
+}
+
+/* ─── Mobile (<768px) ─── */
+@media (max-width: 767px) {
+  /* Mostra top bar e botões mobile */
+  .mobile-topbar { display: flex; }
+  .mobile-menu-btn,
+  .sidebar-close-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Sidebar vira gaveta (fora da tela por padrão) */
+  .layout-sidebar {
+    transform: translateX(-100%);
+    width: 280px;
+  }
+  .layout-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Conteúdo principal: sem margem lateral, espaço para top bar */
+  .layout-main {
+    margin-left: 0;
+    padding-top: 52px;
+  }
 
   /* Padding das páginas internas */
   .page-content {
     padding: 1rem !important;
-  }
-
-  /* Cards ocupam largura total */
-  .card, .card-hover {
-    border-radius: 0.5rem;
   }
 
   /* Tabelas: scroll horizontal */
@@ -312,9 +440,9 @@ tbody tr:hover { background: #0f0f0f; }
     white-space: nowrap;
   }
 
-  /* Inputs maiores no touch */
+  /* Inputs maiores no touch — evita zoom no iOS */
   .input {
-    font-size: 16px !important; /* evita zoom automático no iOS */
+    font-size: 16px !important;
     padding: 0.625rem 0.875rem;
   }
 
@@ -325,11 +453,16 @@ tbody tr:hover { background: #0f0f0f; }
     min-height: 44px;
   }
 
-  /* Nav links maiores no celular */
+  /* Nav links maiores */
   .nav-link {
-    padding: 0.625rem 0.75rem;
-    font-size: 0.95rem;
+    padding: 0.75rem 0.875rem;
+    font-size: 1rem;
     margin-bottom: 0.25rem;
-    min-height: 44px;
+    min-height: 48px;
+  }
+
+  /* Cards ocupam largura total */
+  .card, .card-hover {
+    border-radius: 0.5rem;
   }
 }
