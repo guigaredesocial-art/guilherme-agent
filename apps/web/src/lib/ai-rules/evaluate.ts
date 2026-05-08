@@ -6,6 +6,7 @@ export interface ChannelMessage {
   contactId: string; // externalId (ex: 5571...@c.us)
   text: string;
   timestamp: Date;
+  mediaUrl?: string; // data URI para áudio/imagem (base64) ou URL remota
 }
 
 export type Decision =

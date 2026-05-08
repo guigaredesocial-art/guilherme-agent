@@ -77,68 +77,89 @@ async function transcribeAudioBase64(base64: string, mimetype: string): Promise<
   }
 }
 
-// Extrai texto ou placeholder de qualquer tipo de mensagem do WhatsApp
-async function extractMessageText(data: EvolutionPayload["data"]): Promise<string | null> {
+interface ExtractResult {
+  text: string;
+  mediaUrl?: string; // data URI (base64) para áudio ou imagem
+}
+
+// Extrai texto e mídia de qualquer tipo de mensagem do WhatsApp
+async function extractMessage(data: EvolutionPayload["data"]): Promise<ExtractResult | null> {
   const msg = data?.message;
   if (!msg) return null;
 
   // Mensagens de texto simples
   const text = msg.conversation ?? msg.extendedTextMessage?.text ?? "";
-  if (text.trim()) return text.trim();
+  if (text.trim()) return { text: text.trim() };
 
   // Áudio / voz
   if (msg.audioMessage) {
-    // Log para ver exatamente o que a Evolution API envia (sem base64 poluir o log)
-    console.log(JSON.stringify({
-      event: "audio.received",
-      seconds: msg.audioMessage.seconds,
-      mimetype: msg.audioMessage.mimetype,
-      hasBase64: !!msg.base64,
-      base64Len: msg.base64?.length ?? 0,
-      msgKeys: Object.keys(msg),
-    }));
-
-    // A Evolution API coloca o base64 em data.message.base64 quando webhookBase64: true
     const base64 = msg.base64 ?? "";
     const mimetype = msg.audioMessage.mimetype ?? "audio/ogg; codecs=opus";
-    const transcribed = await transcribeAudioBase64(base64, mimetype);
-    if (transcribed) return `🎵 Áudio: "${transcribed}"`;
     const secs = msg.audioMessage.seconds;
-    return secs ? `[🎵 Áudio de ${secs}s — responda pedindo para digitar]` : "[🎵 Áudio recebido — responda pedindo para digitar]";
+
+    console.log(JSON.stringify({
+      event: "audio.received",
+      seconds: secs,
+      mimetype,
+      hasBase64: !!base64,
+      base64Len: base64?.length ?? 0,
+    }));
+
+    // Tentar transcrever via Whisper
+    const transcribed = await transcribeAudioBase64(base64, mimetype);
+
+    // Montar data URI para o player de áudio na UI
+    const mediaUrl = base64
+      ? `data:${mimetype.split(";")[0]};base64,${base64}`
+      : undefined;
+
+    const textContent = transcribed
+      ? `🎵 Áudio: "${transcribed}"`
+      : secs
+        ? `[🎵 Áudio de ${secs}s]`
+        : "[🎵 Áudio recebido]";
+
+    return { text: textContent, mediaUrl };
   }
 
   // Imagem (com ou sem legenda)
   if (msg.imageMessage) {
     const caption = msg.imageMessage.caption?.trim();
-    return caption ? `[📷 Imagem] ${caption}` : "[📷 Imagem recebida]";
+    const base64 = msg.base64 ?? "";
+    const mimetype = msg.imageMessage.mimetype ?? "image/jpeg";
+    const mediaUrl = base64
+      ? `data:${mimetype.split(";")[0]};base64,${base64}`
+      : undefined;
+    const textContent = caption ? `[📷 Imagem] ${caption}` : "[📷 Imagem recebida]";
+    return { text: textContent, mediaUrl };
   }
 
   // Vídeo
   if (msg.videoMessage) {
     const caption = msg.videoMessage.caption?.trim();
-    return caption ? `[📹 Vídeo] ${caption}` : "[📹 Vídeo recebido]";
+    return { text: caption ? `[📹 Vídeo] ${caption}` : "[📹 Vídeo recebido]" };
   }
 
   // Documento / arquivo
   if (msg.documentMessage) {
     const caption = msg.documentMessage.caption?.trim();
     const fileName = msg.documentMessage.fileName ?? "";
-    if (caption) return `[📄 ${fileName || "Documento"}] ${caption}`;
-    return fileName ? `[📄 Documento: ${fileName}]` : "[📄 Documento recebido]";
+    if (caption) return { text: `[📄 ${fileName || "Documento"}] ${caption}` };
+    return { text: fileName ? `[📄 Documento: ${fileName}]` : "[📄 Documento recebido]" };
   }
 
   // Sticker
-  if (msg.stickerMessage) return "[🌟 Sticker]";
+  if (msg.stickerMessage) return { text: "[🌟 Sticker]" };
 
   // Localização
   if (msg.locationMessage) {
     const lat = msg.locationMessage.degreesLatitude?.toFixed(5);
     const lng = msg.locationMessage.degreesLongitude?.toFixed(5);
-    return `[📍 Localização: ${lat}, ${lng}]`;
+    return { text: `[📍 Localização: ${lat}, ${lng}]` };
   }
 
-  // Reação (não precisa responder, mas registrar)
-  if (msg.reactionMessage) return null; // ignora reações silenciosamente
+  // Reação — ignora silenciosamente
+  if (msg.reactionMessage) return null;
 
   return null; // tipo desconhecido
 }
@@ -186,12 +207,12 @@ export async function POST(req: NextRequest) {
       return Response.json({ ok: true, duplicate: true });
     }
 
-    const text = await extractMessageText(payload.data);
+    const extracted = await extractMessage(payload.data);
 
-    if (text === null) {
+    if (extracted === null) {
       return Response.json({ ok: true, skipped: "reaction_or_unknown" });
     }
-    if (!text.trim()) {
+    if (!extracted.text.trim()) {
       return Response.json({ ok: true, skipped: "empty_text" });
     }
 
@@ -244,8 +265,9 @@ export async function POST(req: NextRequest) {
     const msg: ChannelMessage = {
       id: providerMsgId,
       contactId: externalId, // SEMPRE o externalId, nunca o cuid interno
-      text,
+      text: extracted.text,
       timestamp: new Date(),
+      mediaUrl: extracted.mediaUrl,
     };
 
     // Processar em background para responder 200 rápido

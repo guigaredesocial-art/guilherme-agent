@@ -308,13 +308,14 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <div
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: "0.5rem",
+                          gap: "0.375rem",
                           marginBottom: "2px",
+                          flexWrap: "wrap",
                         }}
                       >
                         <span style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--foreground)" }}>

@@ -111,6 +111,7 @@ model Message {
   conversationId String
   role           String
   content        String
+  mediaUrl       String?
   providerMsgId  String?          @unique
   createdAt      DateTime         @default(now())
   feedback       MessageFeedback?

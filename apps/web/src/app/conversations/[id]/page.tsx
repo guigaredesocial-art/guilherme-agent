@@ -12,7 +12,7 @@ const STATUS_CFG = {
 };
 
 interface MsgFeedback { rating: string; correction?: string }
-interface Message { id: string; role: string; content: string; createdAt: string; feedback?: MsgFeedback | null }
+interface Message { id: string; role: string; content: string; mediaUrl?: string | null; createdAt: string; feedback?: MsgFeedback | null }
 interface Lead { id: string; name: string; status: string }
 interface ConvDetail {
   id: string; aiEnabled: boolean; handoffRequested: boolean; status: string; channel: string;
@@ -343,12 +343,37 @@ export default function ConversationPage() {
               const isBot = msg.role === "assistant";
               const isManual = msg.content.startsWith("[MANUAL]");
               const displayContent = msg.content.replace(/^\[MANUAL\]\s?/, "");
+              const isAudio = !!msg.mediaUrl?.startsWith("data:audio");
+              const isImage = !!msg.mediaUrl?.startsWith("data:image");
               return (
                 <div key={msg.id} style={{ display: "flex", flexDirection: "column", alignItems: isBot ? "flex-end" : "flex-start", marginBottom: "0.875rem" }}>
                   {isManual && <div style={{ fontSize: "0.68rem", color: "#3b82f6", marginBottom: "3px", paddingRight: "4px" }}>👤 Operador</div>}
-                  <div style={{ maxWidth: "78%", padding: "0.6rem 0.875rem", borderRadius: isBot ? "0.875rem 0.875rem 0.25rem 0.875rem" : "0.875rem 0.875rem 0.875rem 0.25rem", background: isBot ? (isManual ? "#1e3a5f" : "var(--accent-dim)") : "var(--msg-user-bg)", border: `1px solid ${isBot ? (isManual ? "#3b82f640" : "var(--accent-dim)") : "var(--msg-user-border)"}`, color: isBot ? (isManual ? "#93c5fd" : "var(--accent)") : "var(--foreground)", fontSize: "0.875rem", lineHeight: 1.5 }}>
-                    <div style={{ whiteSpace: "pre-wrap" }}>{displayContent}</div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--muted)", marginTop: "4px", textAlign: isBot ? "left" : "right", opacity: 0.7 }}>
+                  <div style={{ maxWidth: "78%", padding: isImage ? "0.25rem" : "0.6rem 0.875rem", borderRadius: isBot ? "0.875rem 0.875rem 0.25rem 0.875rem" : "0.875rem 0.875rem 0.875rem 0.25rem", background: isBot ? (isManual ? "#1e3a5f" : "var(--accent-dim)") : "var(--msg-user-bg)", border: `1px solid ${isBot ? (isManual ? "#3b82f640" : "var(--accent-dim)") : "var(--msg-user-border)"}`, color: isBot ? (isManual ? "#93c5fd" : "var(--accent)") : "var(--foreground)", fontSize: "0.875rem", lineHeight: 1.5, overflow: "hidden" }}>
+                    {isImage && msg.mediaUrl ? (
+                      <div>
+                        <img
+                          src={msg.mediaUrl}
+                          alt="Imagem"
+                          style={{ display: "block", maxWidth: "100%", maxHeight: 300, borderRadius: "0.625rem", cursor: "pointer" }}
+                          onClick={() => window.open(msg.mediaUrl!, "_blank")}
+                        />
+                        {displayContent.replace("[📷 Imagem recebida]", "").replace("[📷 Imagem]", "").trim() && (
+                          <div style={{ padding: "0.4rem 0.625rem", whiteSpace: "pre-wrap" }}>{displayContent.replace("[📷 Imagem]", "").trim()}</div>
+                        )}
+                      </div>
+                    ) : isAudio && msg.mediaUrl ? (
+                      <div style={{ padding: "0.25rem 0" }}>
+                        <audio controls src={msg.mediaUrl} style={{ maxWidth: "100%", minWidth: 220, height: 40, outline: "none" }} />
+                        {displayContent.startsWith("🎵 Áudio:") && (
+                          <div style={{ fontSize: "0.8rem", color: isBot ? "var(--accent)" : "var(--foreground)", marginTop: "0.375rem", fontStyle: "italic", opacity: 0.85 }}>
+                            {displayContent.replace("🎵 Áudio:", "").trim()}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ whiteSpace: "pre-wrap" }}>{displayContent}</div>
+                    )}
+                    <div style={{ fontSize: "0.68rem", color: "var(--muted)", marginTop: "4px", textAlign: isBot ? "left" : "right", opacity: 0.7, padding: isImage ? "0 0.5rem 0.25rem" : 0 }}>
                       {new Date(msg.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                     </div>
                   </div>

@@ -220,6 +220,7 @@ export async function flushConversation(
         role: "user",
         content: msg.text,
         providerMsgId: msg.id,
+        ...(msg.mediaUrl ? { mediaUrl: msg.mediaUrl } as any : {}),
       },
     });
   }
