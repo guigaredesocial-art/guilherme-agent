@@ -227,6 +227,20 @@ Regras ABSOLUTAS:
       `ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "photoUrl" TEXT`
     );
 
+    // Histórico persistente do Chat Interno
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "InternalMessage" (
+        "id" TEXT NOT NULL,
+        "role" TEXT NOT NULL,
+        "content" TEXT NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "InternalMessage_pkey" PRIMARY KEY ("id")
+      )
+    `);
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "InternalMessage_createdAt_idx" ON "InternalMessage"("createdAt")`
+    );
+
     // Provas Sociais (imagens/vídeos para o agente enviar automaticamente)
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "SocialProof" (
