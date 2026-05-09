@@ -143,7 +143,11 @@ export async function sendTextEvolution(externalId: string, text: string): Promi
   const res = await fetch(`${BASE()}/message/sendText/${INSTANCE()}`, {
     method: "POST",
     headers: HEADERS(),
-    body: JSON.stringify({ number, text: text, delay: 1200 }),
+    body: JSON.stringify({ 
+      number, 
+      textMessage: { text }, 
+      options: { delay: 1200, presence: "composing" } 
+    }),
   });
   if (!res.ok) {
     const body = await res.text();
