@@ -9,25 +9,31 @@ function getClient(): Anthropic {
   return _client;
 }
 
+export type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp"; data: string } }
+  | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string }; title?: string };
+
 export interface ChatMessage {
   role: "user" | "assistant";
-  content: string;
+  content: string | ContentBlock[];
 }
 
 export async function chat(
   systemPrompt: string,
   history: ChatMessage[],
   model = "claude-3-5-sonnet-20241022",
-  temperature = 0.7
+  temperature = 0.7,
+  maxTokens = 300 // curto — agente de vendas via WhatsApp
 ): Promise<string> {
   const client = getClient();
 
   const response = await client.messages.create({
     model,
-    max_tokens: 300, // curto — agente de vendas via WhatsApp
+    max_tokens: maxTokens,
     temperature,
     system: systemPrompt,
-    messages: history,
+    messages: history as Anthropic.MessageParam[],
   });
 
   const block = response.content[0];
