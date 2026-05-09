@@ -100,15 +100,14 @@ export async function sendMediaEvolution(
   mediaType: "image" | "video" | "document",
   caption = ""
 ): Promise<void> {
-  const number = normalizeNumber(externalId);
-  if (!number) {
+  if (!externalId.includes("@")) {
     throw new Error(`sendMedia: externalId inválido (${externalId})`);
   }
   const res = await fetch(`${BASE()}/message/sendMedia/${INSTANCE()}`, {
     method: "POST",
     headers: HEADERS(),
     body: JSON.stringify({
-      number,
+      number: externalId,
       mediaMessage: {
         mediaType,
         fileName: mediaType === "image" ? "prova.jpg" : mediaType === "video" ? "video.mp4" : "arquivo.pdf",
@@ -125,34 +124,24 @@ export async function sendMediaEvolution(
   console.log(JSON.stringify({ event: "evolution.sendMedia_ok", externalId, mediaType }));
 }
 
-/**
- * Normaliza o remoteJid para o formato que a Evolution API aceita no campo "number".
- * Grupos (@g.us) ficam intactos. Indivíduos perdem o sufixo @s.whatsapp.net/@c.us/@lid.
- */
-function normalizeNumber(externalId: string): string {
-  if (externalId.includes("@g.us")) return externalId; // grupo — mantém
-  return externalId.replace(/@.*$/, ""); // individual — só o número
-}
-
 export async function sendTextEvolution(externalId: string, text: string): Promise<void> {
-  const number = normalizeNumber(externalId);
-  if (!number) {
+  if (!externalId.includes("@")) {
     console.error(JSON.stringify({ event: "evolution.send_invalid_id", externalId }));
-    throw new Error(`sendText: externalId inválido (${externalId})`);
+    throw new Error(`sendText: externalId inválido (${externalId}) — deve conter @`);
   }
   const res = await fetch(`${BASE()}/message/sendText/${INSTANCE()}`, {
     method: "POST",
     headers: HEADERS(),
     body: JSON.stringify({ 
-      number, 
+      number: externalId, 
       textMessage: { text }, 
       options: { delay: 1200, presence: "composing" } 
     }),
   });
   if (!res.ok) {
     const body = await res.text();
-    console.error(JSON.stringify({ event: "evolution.send_failed", status: res.status, body, originalId: externalId, number }));
+    console.error(JSON.stringify({ event: "evolution.send_failed", status: res.status, body, originalId: externalId }));
     throw new Error(`sendText failed: ${res.status}`);
   }
-  console.log(JSON.stringify({ event: "evolution.send_ok", number }));
+  console.log(JSON.stringify({ event: "evolution.send_ok", number: externalId }));
 }
