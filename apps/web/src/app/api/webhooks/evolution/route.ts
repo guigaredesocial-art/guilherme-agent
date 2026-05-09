@@ -243,8 +243,8 @@ export async function POST(req: NextRequest) {
     }
 
     const key = payload.data?.key;
-    if (!key || key.fromMe) {
-      return Response.json({ ok: true, skipped: "fromMe" });
+    if (!key) {
+      return Response.json({ ok: true, skipped: "no_key" });
     }
 
     const providerMsgId = key.id;
@@ -323,6 +323,43 @@ export async function POST(req: NextRequest) {
       timestamp: new Date(),
       mediaUrl: extracted.mediaUrl,
     };
+
+    if (key.fromMe) {
+      // É uma mensagem enviada pelo próprio número (pelo celular ou pela IA via API)
+      // Checar se a IA acabou de gerar essa mesma mensagem
+      const recentAiMsg = await prisma.message.findFirst({
+        where: {
+          conversationId: conversation.id,
+          role: "assistant",
+          content: extracted.text,
+          createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) }
+        }
+      });
+
+      if (recentAiMsg && !recentAiMsg.providerMsgId) {
+        // Foi a IA, apenas vinculamos o ID da Evolution API a essa mensagem
+        await prisma.message.update({
+          where: { id: recentAiMsg.id },
+          data: { providerMsgId: msg.id }
+        });
+        return Response.json({ ok: true, skipped: "ai_echo_updated" });
+      }
+
+      // Se não, o dono do WhatsApp digitou no celular dele
+      // Salvamos no contexto como "assistant" para a IA ficar ciente, mas sem ativar o flush
+      await prisma.message.upsert({
+        where: { providerMsgId: msg.id },
+        update: {},
+        create: {
+          conversationId: conversation.id,
+          role: "assistant",
+          content: msg.text,
+          providerMsgId: msg.id,
+        },
+      });
+      console.log(JSON.stringify({ event: "webhook.fromMe_saved", text: msg.text }));
+      return Response.json({ ok: true, saved: "user_from_phone" });
+    }
 
     // Processar em background para responder 200 rápido
     setTimeout(() => {
