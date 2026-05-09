@@ -94,6 +94,36 @@ export async function fetchProfilePicture(externalId: string): Promise<string | 
   }
 }
 
+export async function sendMediaEvolution(
+  externalId: string,
+  mediaUrl: string,
+  mediaType: "image" | "video" | "document",
+  caption = ""
+): Promise<void> {
+  if (!externalId.includes("@")) {
+    throw new Error(`sendMedia: externalId inválido (${externalId})`);
+  }
+  const res = await fetch(`${BASE()}/message/sendMedia/${INSTANCE()}`, {
+    method: "POST",
+    headers: HEADERS(),
+    body: JSON.stringify({
+      number: externalId,
+      mediaMessage: {
+        mediaType,
+        fileName: mediaType === "image" ? "prova.jpg" : mediaType === "video" ? "video.mp4" : "arquivo.pdf",
+        caption,
+        media: mediaUrl,
+      },
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(JSON.stringify({ event: "evolution.sendMedia_failed", status: res.status, body }));
+    throw new Error(`sendMedia failed: ${res.status}`);
+  }
+  console.log(JSON.stringify({ event: "evolution.sendMedia_ok", externalId, mediaType }));
+}
+
 export async function sendTextEvolution(externalId: string, text: string): Promise<void> {
   // externalId deve conter @ (ex: 5571...@c.us ou @lid)
   if (!externalId.includes("@")) {

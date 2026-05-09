@@ -227,6 +227,25 @@ Regras ABSOLUTAS:
       `ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "photoUrl" TEXT`
     );
 
+    // Provas Sociais (imagens/vídeos para o agente enviar automaticamente)
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "SocialProof" (
+        "id" TEXT NOT NULL,
+        "name" TEXT NOT NULL,
+        "mediaUrl" TEXT NOT NULL,
+        "mediaType" TEXT NOT NULL DEFAULT 'image',
+        "caption" TEXT NOT NULL DEFAULT '',
+        "triggerHint" TEXT NOT NULL DEFAULT '',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "SocialProof_pkey" PRIMARY KEY ("id")
+      )
+    `);
+
+    // Coluna mediaUrl na tabela Message (para áudio/imagem recebidos)
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "mediaUrl" TEXT`
+    );
+
     console.log(JSON.stringify({ event: "migrations.ok" }));
   } catch (err) {
     console.error(JSON.stringify({ event: "migrations.failed", err: String(err) }));

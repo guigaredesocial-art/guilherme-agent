@@ -5,14 +5,15 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 
 const NAV = [
-  { href: "/dashboard",    icon: "◈",  label: "Dashboard" },
-  { href: "/crm",          icon: "◉",  label: "CRM / Leads" },
-  { href: "/insights",     icon: "◎",  label: "Insights" },
-  { href: "/chat-interno", icon: "🧠", label: "Chat Interno" },
-  { href: "/reminders",    icon: "⏰", label: "Lembretes" },
-  { href: "/agents",       icon: "◆",  label: "Agente" },
-  { href: "/settings",     icon: "⚙",  label: "Configurações" },
-  { href: "/qrcode",       icon: "◻",  label: "QR Code" },
+  { href: "/dashboard",      icon: "◈",  label: "Dashboard" },
+  { href: "/crm",            icon: "◉",  label: "CRM / Leads" },
+  { href: "/insights",       icon: "◎",  label: "Insights" },
+  { href: "/chat-interno",   icon: "🧠", label: "Chat Interno" },
+  { href: "/reminders",      icon: "⏰", label: "Lembretes" },
+  { href: "/provas-sociais", icon: "🖼️", label: "Provas Sociais" },
+  { href: "/agents",         icon: "◆",  label: "Agente" },
+  { href: "/settings",       icon: "⚙",  label: "Configurações" },
+  { href: "/qrcode",         icon: "◻",  label: "QR Code" },
 ];
 
 interface Props {

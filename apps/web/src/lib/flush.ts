@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { chat } from "@/lib/llm/anthropic";
 import { retrieveContext } from "@/lib/rag";
 import { decideAction, type ChannelMessage } from "@/lib/ai-rules/evaluate";
-import { sendTextEvolution } from "@/lib/channels/evolution";
+import { sendTextEvolution, sendMediaEvolution } from "@/lib/channels/evolution";
 import type { Conversation } from "@prisma/client";
 
 // ─── Auto-classificação de tags e status ─────────────────────────────────────
@@ -204,10 +204,25 @@ export async function flushConversation(
   // 4. RAG context
   const ragContext = await retrieveContext(userText, agentSession.id);
 
-  // 5. Montar system prompt com RAG
+  // 5. Montar system prompt com RAG e Provas Sociais
   let systemPrompt = agentSession.systemPrompt;
   if (ragContext) {
     systemPrompt += `\n\n--- BASE DE CONHECIMENTO ---\n${ragContext}\n--- FIM DA BASE ---`;
+  }
+
+  // Injetar provas sociais disponíveis
+  const socialProofs = await (prisma as any).socialProof.findMany({ orderBy: { createdAt: "asc" } });
+  if (socialProofs.length > 0) {
+    systemPrompt += `\n\n--- PROVAS SOCIAIS DISPONÍVEIS ---
+Você pode enviar fotos ou vídeos de prova social para quebrar objeções e gerar confiança.
+Quando identificar o momento certo (cliente pediu prova, resultado, foto, depoimento, está desconfiante ou em dúvida sobre eficácia), inclua EXATAMENTE este código no FINAL da sua mensagem (em linha separada):
+[PROVA_SOCIAL:ID_AQUI]
+
+Provas disponíveis:
+${socialProofs.map((p: any) => `• ID: ${p.id} | Nome: "${p.name}" | Tipo: ${p.mediaType} | Legenda: "${p.caption}" | Quando usar: ${p.triggerHint || "a seu critério"}`).join("\n")}
+
+IMPORTANTE: Use no máximo 1 prova por mensagem. Só use quando for realmente oportuno. Não force.
+--- FIM DAS PROVAS SOCIAIS ---`;
   }
 
   // 6. Salvar msgs do usuário no DB
@@ -253,9 +268,34 @@ export async function flushConversation(
     return;
   }
 
+  // Detectar marcador de prova social no reply
+  const proofMatch = reply.match(/\[PROVA_SOCIAL:([^\]]+)\]/);
+  const cleanReply = reply.replace(/\[PROVA_SOCIAL:[^\]]*\]/g, "").trim();
+
   try {
     console.log(JSON.stringify({ event: "flush.sending_whatsapp", externalId }));
-    await sendTextEvolution(externalId, reply);
+    // Envia o texto (sem o marcador)
+    if (cleanReply) {
+      await sendTextEvolution(externalId, cleanReply);
+    }
+
+    // Se havia prova social, busca e envia a mídia
+    if (proofMatch) {
+      const proofId = proofMatch[1].trim();
+      const proof = await (prisma as any).socialProof.findUnique({ where: { id: proofId } });
+      if (proof) {
+        await sendMediaEvolution(
+          externalId,
+          proof.mediaUrl,
+          proof.mediaType as "image" | "video" | "document",
+          proof.caption
+        );
+        console.log(JSON.stringify({ event: "flush.social_proof_sent", proofId, proofName: proof.name }));
+      } else {
+        console.error(JSON.stringify({ event: "flush.social_proof_not_found", proofId }));
+      }
+    }
+
     console.log(JSON.stringify({ event: "flush.sent_ok", conversationId: conv.id, externalId }));
   } catch (e) {
     console.error(JSON.stringify({ event: "flush.send_failed", err: String(e), conversationId: conv.id }));
