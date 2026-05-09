@@ -211,7 +211,10 @@ export async function flushConversation(
   }
 
   // Injetar provas sociais disponíveis
-  const socialProofs = await (prisma as any).socialProof.findMany({ orderBy: { createdAt: "asc" } });
+  let socialProofs: any[] = [];
+  try {
+    socialProofs = await (prisma as any).socialProof.findMany({ orderBy: { createdAt: "asc" } });
+  } catch { /* tabela pode não existir ainda */ }
   if (socialProofs.length > 0) {
     systemPrompt += `\n\n--- PROVAS SOCIAIS DISPONÍVEIS ---
 Você pode enviar fotos ou vídeos de prova social para quebrar objeções e gerar confiança.

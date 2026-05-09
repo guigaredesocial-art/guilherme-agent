@@ -208,3 +208,13 @@ model InternalMessage {
   content   String
   createdAt DateTime @default(now())
 }
+
+model SocialProof {
+  id          String   @id @default(cuid())
+  name        String
+  mediaUrl    String
+  mediaType   String   @default("image")
+  caption     String   @default("")
+  triggerHint String   @default("")
+  createdAt   DateTime @default(now())
+}
