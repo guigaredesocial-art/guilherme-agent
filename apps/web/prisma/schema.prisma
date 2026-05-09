@@ -201,3 +201,10 @@ model Operator {
   role      String   @default("operator")
   createdAt DateTime @default(now())
 }
+
+model InternalMessage {
+  id        String   @id @default(cuid())
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+}

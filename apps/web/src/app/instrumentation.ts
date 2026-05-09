@@ -11,6 +11,20 @@ export async function register() {
     console.error(JSON.stringify({ event: "migration.failed", err: String(err) }));
   }
 
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "InternalMessage" (
+        "id"        TEXT NOT NULL PRIMARY KEY,
+        "role"      TEXT NOT NULL,
+        "content"   TEXT NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log(JSON.stringify({ event: "migration.ok", table: "InternalMessage" }));
+  } catch (err) {
+    console.error(JSON.stringify({ event: "migration.failed", table: "InternalMessage", err: String(err) }));
+  }
+
   const { ensureEvolutionInstance, fetchProfilePicture } = await import("@/lib/channels/evolution");
   try {
     const state = await ensureEvolutionInstance();

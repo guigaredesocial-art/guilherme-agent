@@ -111,10 +111,15 @@ export default function ChatInternoPage() {
         headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
         body: JSON.stringify({ content: msg, attachments: attachmentsToSend }),
       });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => res.status.toString());
+        setMessages((prev) => [...prev, { role: "assistant", content: `Erro ${res.status}: ${errText}` }]);
+        return;
+      }
       const data = await res.json();
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-    } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Erro ao conectar. Tente novamente." }]);
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: "assistant", content: `Erro ao conectar: ${err instanceof Error ? err.message : "tente novamente"}` }]);
     } finally {
       setLoading(false);
     }
