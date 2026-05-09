@@ -28,8 +28,17 @@ interface EvolutionPayload {
       stickerMessage?: object;
       locationMessage?: { degreesLatitude?: number; degreesLongitude?: number };
       reactionMessage?: { text?: string };
+      // Mensagem de anúncio click-to-WhatsApp (Instagram/Facebook Ads)
+      advertisingMessage?: { advertisingBody?: string; advertisingTitle?: string };
+      // Botão de template clicado
+      templateButtonReplyMessage?: { selectedId?: string; selectedDisplayText?: string };
+      // Resposta interativa (lista ou botão)
+      listResponseMessage?: { title?: string; description?: string };
+      buttonsResponseMessage?: { selectedButtonId?: string; selectedDisplayText?: string };
       base64?: string; // Evolution API v1: base64 dentro de message
     };
+    // Referral de anúncio — presente em click-to-WhatsApp
+    referral?: { headline?: string; body?: string; sourceUrl?: string; sourceType?: string };
     messageType?: string;
     pushName?: string;
   };
@@ -94,6 +103,41 @@ async function extractMessage(data: EvolutionPayload["data"]): Promise<ExtractRe
   // Mensagens de texto simples
   const text = msg.conversation ?? msg.extendedTextMessage?.text ?? "";
   if (text.trim()) return { text: text.trim() };
+
+  // Anúncio click-to-WhatsApp (Instagram/Facebook Ads) — texto do próprio anúncio ou referral
+  if (msg.advertisingMessage) {
+    const adText = msg.advertisingMessage.advertisingBody || msg.advertisingMessage.advertisingTitle || "";
+    const referralText = data.referral?.body || data.referral?.headline || "";
+    const combined = [adText, referralText].filter(Boolean).join(" — ");
+    const fallback = "Olá! Vim pelo anúncio";
+    console.log(JSON.stringify({ event: "ad_message.received", adText, referralText }));
+    return { text: combined || fallback };
+  }
+
+  // Referral sem corpo de mensagem (clique no link do anúncio sem digitar nada)
+  if (data.referral && !text.trim()) {
+    const referralText = data.referral.body || data.referral.headline || "";
+    console.log(JSON.stringify({ event: "referral.received", referralText, sourceType: data.referral.sourceType }));
+    return { text: referralText || "Olá! Vim pelo anúncio" };
+  }
+
+  // Botão de template clicado
+  if (msg.templateButtonReplyMessage) {
+    const btnText = msg.templateButtonReplyMessage.selectedDisplayText || msg.templateButtonReplyMessage.selectedId || "Clicou em botão";
+    return { text: btnText };
+  }
+
+  // Resposta de lista interativa
+  if (msg.listResponseMessage) {
+    const listText = [msg.listResponseMessage.title, msg.listResponseMessage.description].filter(Boolean).join(" — ");
+    return { text: listText || "Selecionou uma opção" };
+  }
+
+  // Resposta de botão interativo
+  if (msg.buttonsResponseMessage) {
+    const btnText = msg.buttonsResponseMessage.selectedDisplayText || msg.buttonsResponseMessage.selectedButtonId || "Clicou em botão";
+    return { text: btnText };
+  }
 
   // Áudio / voz
   if (msg.audioMessage) {
