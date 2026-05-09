@@ -17,6 +17,7 @@ interface EvolutionPayload {
   instance: string;
   data: {
     key?: { id?: string; remoteJid?: string; fromMe?: boolean };
+    base64?: string; // Evolution API v2: base64 no nível de data
     message?: {
       conversation?: string;
       extendedTextMessage?: { text?: string };
@@ -27,7 +28,7 @@ interface EvolutionPayload {
       stickerMessage?: object;
       locationMessage?: { degreesLatitude?: number; degreesLongitude?: number };
       reactionMessage?: { text?: string };
-      base64?: string; // preenchido quando webhookBase64: true
+      base64?: string; // Evolution API v1: base64 dentro de message
     };
     messageType?: string;
     pushName?: string;
@@ -87,13 +88,15 @@ async function extractMessage(data: EvolutionPayload["data"]): Promise<ExtractRe
   const msg = data?.message;
   if (!msg) return null;
 
+  // Evolution API pode colocar o base64 em data.base64 (v2) ou data.message.base64 (v1)
+  const rawBase64 = data.base64 ?? msg.base64 ?? "";
+
   // Mensagens de texto simples
   const text = msg.conversation ?? msg.extendedTextMessage?.text ?? "";
   if (text.trim()) return { text: text.trim() };
 
   // Áudio / voz
   if (msg.audioMessage) {
-    const base64 = msg.base64 ?? "";
     const mimetype = msg.audioMessage.mimetype ?? "audio/ogg; codecs=opus";
     const secs = msg.audioMessage.seconds;
 
@@ -101,16 +104,15 @@ async function extractMessage(data: EvolutionPayload["data"]): Promise<ExtractRe
       event: "audio.received",
       seconds: secs,
       mimetype,
-      hasBase64: !!base64,
-      base64Len: base64?.length ?? 0,
+      hasBase64: !!rawBase64,
+      base64Len: rawBase64?.length ?? 0,
+      source: data.base64 ? "data.base64" : msg.base64 ? "msg.base64" : "none",
     }));
 
-    // Tentar transcrever via Whisper
-    const transcribed = await transcribeAudioBase64(base64, mimetype);
+    const transcribed = await transcribeAudioBase64(rawBase64, mimetype);
 
-    // Montar data URI para o player de áudio na UI
-    const mediaUrl = base64
-      ? `data:${mimetype.split(";")[0]};base64,${base64}`
+    const mediaUrl = rawBase64
+      ? `data:${mimetype.split(";")[0]};base64,${rawBase64}`
       : undefined;
 
     const textContent = transcribed
@@ -125,10 +127,18 @@ async function extractMessage(data: EvolutionPayload["data"]): Promise<ExtractRe
   // Imagem (com ou sem legenda)
   if (msg.imageMessage) {
     const caption = msg.imageMessage.caption?.trim();
-    const base64 = msg.base64 ?? "";
     const mimetype = msg.imageMessage.mimetype ?? "image/jpeg";
-    const mediaUrl = base64
-      ? `data:${mimetype.split(";")[0]};base64,${base64}`
+
+    console.log(JSON.stringify({
+      event: "image.received",
+      mimetype,
+      hasBase64: !!rawBase64,
+      base64Len: rawBase64?.length ?? 0,
+      source: data.base64 ? "data.base64" : msg.base64 ? "msg.base64" : "none",
+    }));
+
+    const mediaUrl = rawBase64
+      ? `data:${mimetype.split(";")[0]};base64,${rawBase64}`
       : undefined;
     const textContent = caption ? `[📷 Imagem] ${caption}` : "[📷 Imagem recebida]";
     return { text: textContent, mediaUrl };

@@ -327,6 +327,8 @@ export default function DashboardPage() {
                             background: statusCfg.bg,
                             color: statusCfg.color,
                             border: `1px solid ${statusCfg.color}30`,
+                            fontSize: "0.65rem",
+                            padding: "0.1rem 0.5rem",
                           }}
                         >
                           {statusCfg.label}
@@ -334,13 +336,13 @@ export default function DashboardPage() {
                         {conv.handoffRequested && (
                           <span
                             className="chip"
-                            style={{ background: "#f59e0b18", color: "#f59e0b", border: "1px solid #f59e0b30" }}
+                            style={{ background: "#f59e0b18", color: "#f59e0b", border: "1px solid #f59e0b30", fontSize: "0.65rem", padding: "0.1rem 0.5rem" }}
                           >
                             ⚠ Handoff
                           </span>
                         )}
                         {conv.tags && conv.tags.split(",").filter(Boolean).map((tag) => (
-                          <span key={tag} className="chip" style={{ background: "#ffffff08", color: "#9ca3af", border: "1px solid #2a2a2a", fontSize: "0.68rem" }}>
+                          <span key={tag} className="chip" style={{ background: "#ffffff08", color: "#9ca3af", border: "1px solid #2a2a2a", fontSize: "0.62rem", padding: "0.1rem 0.45rem" }}>
                             {tag}
                           </span>
                         ))}
