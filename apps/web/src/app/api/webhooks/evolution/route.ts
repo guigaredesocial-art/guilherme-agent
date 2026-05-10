@@ -98,7 +98,11 @@ async function extractMessage(data: EvolutionPayload["data"]): Promise<ExtractRe
   if (!msg) return null;
 
   // Evolution API pode colocar o base64 em data.base64 (v2) ou data.message.base64 (v1)
-  const rawBase64 = data.base64 ?? msg.base64 ?? "";
+  let rawBase64 = data.base64 ?? msg.base64 ?? "";
+  if (!rawBase64) {
+    const match = JSON.stringify(msg).match(/"base64":"([^"]+)"/);
+    if (match) rawBase64 = match[1];
+  }
 
   // Mensagens de texto simples
   const text = msg.conversation ?? msg.extendedTextMessage?.text ?? "";

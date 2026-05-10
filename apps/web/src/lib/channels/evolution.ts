@@ -82,10 +82,11 @@ export async function getEvolutionQR(): Promise<string | null> {
 
 export async function fetchProfilePicture(externalId: string): Promise<string | null> {
   try {
-    const res = await fetch(
-      `${BASE()}/chat/fetchProfilePictureUrl/${INSTANCE()}?number=${encodeURIComponent(externalId)}`,
-      { headers: HEADERS() }
-    );
+    const res = await fetch(`${BASE()}/chat/fetchProfilePictureUrl/${INSTANCE()}`, {
+      method: "POST",
+      headers: HEADERS(),
+      body: JSON.stringify({ number: externalId }),
+    });
     if (!res.ok) return null;
     const data = await res.json();
     return data?.profilePictureUrl ?? data?.picture ?? null;

@@ -47,6 +47,8 @@ export default function ConversationPage() {
   const [conv, setConv] = useState<ConvDetail | null>(null);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [mediaToSend, setMediaToSend] = useState<{ url: string; type: string; file: File } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [feedbackOpen, setFeedbackOpen] = useState<string | null>(null);
   const [correction, setCorrection] = useState("");
   const [showLeadForm, setShowLeadForm] = useState(false);
@@ -120,17 +122,33 @@ export default function ConversationPage() {
   }, [conv?.messages.length]);
 
   async function sendReply() {
-    if (!reply.trim()) return;
+    if (!reply.trim() && !mediaToSend) return;
     setSending(true);
     const token = getToken();
     await fetch(`/api/conversations/${id}/reply`, {
       method: "POST",
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ text: reply }),
+      body: JSON.stringify({ 
+        text: reply,
+        ...(mediaToSend ? { mediaUrl: mediaToSend.url, mediaType: mediaToSend.type } : {})
+      }),
     });
     setReply("");
+    setMediaToSend(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     await loadConv();
     setSending(false);
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const type = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
+      setMediaToSend({ url: reader.result as string, type, file });
+    };
+    reader.readAsDataURL(file);
   }
 
   async function toggleAI() {
@@ -474,9 +492,26 @@ export default function ConversationPage() {
           )}
 
           {/* Reply box */}
-          <div style={{ display: "flex", gap: "0.625rem", flexShrink: 0 }}>
-            <input value={reply} onChange={(e) => setReply(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendReply()} placeholder="Responder como operador... (Enter para enviar)" className="input" style={{ flex: 1, padding: "0.625rem 1rem" }} />
-            <button onClick={sendReply} className="btn-primary" disabled={sending}>{sending ? "..." : "Enviar"}</button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
+            {mediaToSend && (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: "0.5rem", width: "fit-content" }}>
+                {mediaToSend.type === "image" ? (
+                  <img src={mediaToSend.url} alt="preview" style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }} />
+                ) : (
+                  <div style={{ fontSize: "1.2rem" }}>📄</div>
+                )}
+                <div style={{ fontSize: "0.75rem", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{mediaToSend.file.name}</div>
+                <button onClick={() => { setMediaToSend(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "1rem" }}>×</button>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: "0.625rem" }}>
+              <input type="file" ref={fileInputRef} onChange={handleFileSelect} style={{ display: "none" }} accept="image/*,video/*,.pdf" />
+              <button onClick={() => fileInputRef.current?.click()} style={{ padding: "0 0.875rem", background: "var(--card)", border: "1px solid var(--card-border)", borderRadius: "0.5rem", cursor: "pointer", fontSize: "1.2rem" }} title="Anexar arquivo">
+                📎
+              </button>
+              <input value={reply} onChange={(e) => setReply(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendReply()} placeholder="Responder como operador... (Enter para enviar)" className="input" style={{ flex: 1, padding: "0.625rem 1rem" }} />
+              <button onClick={sendReply} className="btn-primary" disabled={sending}>{sending ? "..." : "Enviar"}</button>
+            </div>
           </div>
         </div>
 
