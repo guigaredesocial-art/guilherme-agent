@@ -11,10 +11,19 @@ const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL!;
 const SECRET = () => process.env.EVOLUTION_WEBHOOK_SECRET ?? "";
 
 export async function POST(req: NextRequest) {
+  return handleSync(req);
+}
+
+export async function GET(req: NextRequest) {
+  return handleSync(req);
+}
+
+async function handleSync(req: NextRequest) {
   try {
     // Basic auth check to prevent abuse
     const auth = req.headers.get("authorization");
-    if (SECRET() && auth !== `Bearer ${SECRET()}`) {
+    const querySecret = req.nextUrl.searchParams.get("secret");
+    if (SECRET() && auth !== `Bearer ${SECRET()}` && querySecret !== SECRET()) {
       return new Response("Unauthorized", { status: 401 });
     }
 
