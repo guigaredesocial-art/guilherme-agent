@@ -112,6 +112,10 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Scrollbar */
@@ -347,8 +351,10 @@ tbody tr:hover { background: var(--table-row-hover); }
 
 /* Wrapper raiz */
 .layout-root {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--background);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Top bar mobile — oculta no desktop */
@@ -406,14 +412,16 @@ tbody tr:hover { background: var(--table-row-hover); }
 /* Conteúdo principal */
 .layout-main {
   margin-left: 224px;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--background);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ─── Container de página ─── */
 .page-container {
   padding: 1.75rem 2rem;
-  min-height: 100vh;
+  height: 100%;
 }
 
 /* ─── Grids responsivos ─── */

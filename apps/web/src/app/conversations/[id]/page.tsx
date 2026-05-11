@@ -365,7 +365,8 @@ export default function ConversationPage() {
               const isImage = !!msg.mediaUrl?.startsWith("data:image");
               return (
                 <div key={msg.id} style={{ display: "flex", flexDirection: "column", alignItems: isBot ? "flex-end" : "flex-start", marginBottom: "0.875rem" }}>
-                  {isManual && <div style={{ fontSize: "0.68rem", color: "#3b82f6", marginBottom: "3px", paddingRight: "4px" }}>👤 Operador</div>}
+                  {isManual && <div style={{ fontSize: "0.68rem", color: "#3b82f6", marginBottom: "3px", paddingRight: "4px" }}>👤 Operador (Enviado)</div>}
+                  {isBot && !isManual && <div style={{ fontSize: "0.68rem", color: "#a855f7", marginBottom: "3px", paddingRight: "4px" }}>🤖 Sugestão da IA (Não enviado)</div>}
                   <div style={{ maxWidth: "78%", padding: isImage ? "0.25rem" : "0.6rem 0.875rem", borderRadius: isBot ? "0.875rem 0.875rem 0.25rem 0.875rem" : "0.875rem 0.875rem 0.875rem 0.25rem", background: isBot ? (isManual ? "#1e3a5f" : "var(--accent-dim)") : "var(--msg-user-bg)", border: `1px solid ${isBot ? (isManual ? "#3b82f640" : "var(--accent-dim)") : "var(--msg-user-border)"}`, color: isBot ? (isManual ? "#93c5fd" : "var(--accent)") : "var(--foreground)", fontSize: "0.875rem", lineHeight: 1.5, overflow: "hidden" }}>
                     {isImage && msg.mediaUrl ? (
                       <div>
@@ -397,6 +398,9 @@ export default function ConversationPage() {
                   </div>
                   {isBot && !isManual && (
                     <div style={{ display: "flex", gap: "0.25rem", marginTop: "3px", alignItems: "center" }}>
+                      <button onClick={() => setReply(displayContent)} style={{ fontSize: "0.68rem", background: "#a855f720", color: "#a855f7", border: "1px solid #a855f740", borderRadius: "4px", padding: "2px 8px", cursor: "pointer", marginRight: "5px" }}>
+                        Puxar para caixa de texto
+                      </button>
                       {msg.feedback ? (
                         <span style={{ fontSize: "0.68rem", color: msg.feedback.rating === "good" ? "#22c55e" : "#ef4444", opacity: 0.8 }}>
                           {msg.feedback.rating === "good" ? "👍 Boa resposta" : "👎 Resposta ruim"}

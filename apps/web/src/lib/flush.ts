@@ -277,23 +277,25 @@ IMPORTANTE: Use no máximo 1 prova por mensagem. Só use quando for realmente op
 
   try {
     console.log(JSON.stringify({ event: "flush.sending_whatsapp", externalId }));
-    // Envia o texto (sem o marcador)
+    // Se o bot responder, comentamos o envio para que a mensagem fique apenas como SUGESTÃO interna
     if (cleanReply) {
-      await sendTextEvolution(externalId, cleanReply);
+      // DESATIVADO: AI agora é apenas Gerente/Copiloto. Não responde o cliente diretamente.
+      // await sendTextEvolution(externalId, cleanReply);
+      console.log(JSON.stringify({ event: "flush.suggestion_saved_not_sent", externalId }));
     }
 
-    // Se havia prova social, busca e envia a mídia
+    // Se havia prova social, também não envia automaticamente
     if (proofMatch) {
       const proofId = proofMatch[1].trim();
       const proof = await (prisma as any).socialProof.findUnique({ where: { id: proofId } });
       if (proof) {
-        await sendMediaEvolution(
-          externalId,
-          proof.mediaUrl,
-          proof.mediaType as "image" | "video" | "document",
-          proof.caption
-        );
-        console.log(JSON.stringify({ event: "flush.social_proof_sent", proofId, proofName: proof.name }));
+        // await sendMediaEvolution(
+        //   externalId,
+        //   proof.mediaUrl,
+        //   proof.mediaType as "image" | "video" | "document",
+        //   proof.caption
+        // );
+        console.log(JSON.stringify({ event: "flush.social_proof_suggestion_saved", proofId, proofName: proof.name }));
       } else {
         console.error(JSON.stringify({ event: "flush.social_proof_not_found", proofId }));
       }
