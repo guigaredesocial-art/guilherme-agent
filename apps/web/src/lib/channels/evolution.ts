@@ -80,6 +80,53 @@ export async function getEvolutionQR(): Promise<string | null> {
   }
 }
 
+/** Faz logout da sessão expirada (limpa credenciais salvas) */
+export async function logoutEvolutionInstance(): Promise<boolean> {
+  const name = INSTANCE();
+  try {
+    const res = await fetch(`${BASE()}/instance/logout/${name}`, {
+      method: "DELETE",
+      headers: HEADERS(),
+    });
+    console.log(JSON.stringify({ event: "evolution.logout", status: res.status }));
+    return res.ok || res.status === 404;
+  } catch (e) {
+    console.error(JSON.stringify({ event: "evolution.logout_failed", err: String(e) }));
+    return false;
+  }
+}
+
+/** Logout + restart + retorna novo QR code base64 */
+export async function refreshEvolutionQR(): Promise<{ qr: string | null; state: SessionState }> {
+  const name = INSTANCE();
+  const base = BASE();
+  const headers = HEADERS();
+
+  // 1. Logout para limpar sessão expirada
+  await logoutEvolutionInstance().catch(() => {});
+
+  // Aguarda 1.5s para Evolution processar
+  await new Promise((r) => setTimeout(r, 1500));
+
+  // 2. Restart da instância
+  try {
+    await fetch(`${base}/instance/restart/${name}`, { method: "PUT", headers });
+  } catch { /* ignora */ }
+
+  await new Promise((r) => setTimeout(r, 1500));
+
+  // 3. Reconecta e busca QR
+  try {
+    const res = await fetch(`${base}/instance/connect/${name}`, { headers });
+    const data = await res.json();
+    const qr = data?.qrcode?.base64 ?? data?.base64 ?? null;
+    const state = await getEvolutionState();
+    return { qr, state };
+  } catch {
+    return { qr: null, state: "FAILED" };
+  }
+}
+
 export async function fetchProfilePicture(externalId: string): Promise<string | null> {
   try {
     const res = await fetch(`${BASE()}/chat/fetchProfilePictureUrl/${INSTANCE()}`, {

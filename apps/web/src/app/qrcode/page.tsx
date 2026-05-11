@@ -97,8 +97,14 @@ export default function QRCodePage() {
     setReconnecting(true);
     setQr(null);
     try {
-      // Chama ensureEvolutionInstance via endpoint dedicado
-      await fetch("/api/whatsapp/reconnect", { method: "POST" });
+      const res = await fetch("/api/whatsapp/reconnect", { method: "POST" });
+      const data = await res.json();
+      // O endpoint já devolve o QR diretamente
+      if (data?.qr) {
+        setQr(data.qr);
+        setStatus(data.state ?? "SCAN_QR");
+      }
+      // Aguarda um pouco e roda diagnóstico completo
       await new Promise((r) => setTimeout(r, 2000));
       await runDiagnostic();
     } catch {
